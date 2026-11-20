@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #F6F8FB;
+    background-image: radial-gradient(#CBD5E1 0.85px, transparent 0.85px);
+    background-size: 22px 22px;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Custom Pulsing Map Beacon Animations */
+@keyframes beacon-ring {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.campus-pin-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.campus-pin-pulse {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  animation: beacon-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+.campus-pin-core {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+}
+
+/* Clean Light Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.14) !important;
+  border: 1px solid #E2E8F0 !important;
+  padding: 2px !important;
+}
+.campus-daylight-tiles {
+  filter: saturate(0.65) brightness(1.04) contrast(0.95);
+}

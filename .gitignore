@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment Secrets (CRITICAL)
+.env
+client/.env
+server/.env
+*.env.local
+
+# Build Outputs
+client/dist/
+build/
+
+# Uploaded Test Images (keep folder, ignore uploaded files)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Flutter / Android Studio
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+*.iml
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+npm-debug.log*
