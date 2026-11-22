@@ -19,9 +19,10 @@ export default function Login({ onLoginSuccess }) {
         password,
       });
 
+      const userData = data.user || data;
       localStorage.setItem('campusflow_token', data.token);
-      localStorage.setItem('campusflow_user', JSON.stringify(data.user));
-      onLoginSuccess(data.user);
+      localStorage.setItem('campusflow_user', JSON.stringify(userData));
+      onLoginSuccess(userData);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -127,4 +128,3 @@ export default function Login({ onLoginSuccess }) {
     </div>
   );
 }
-

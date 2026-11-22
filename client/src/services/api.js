@@ -1,24 +1,16 @@
 import axios from 'axios';
-import { io } from 'socket.io-client';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const baseURL = rawUrl.endsWith('/api')
+  ? rawUrl
+  : `${rawUrl.replace(/\/$/, '')}/api`;
 
-const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
-});
+const api = axios.create({ baseURL });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('campusflow_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
-});
-
-export const socket = io(API_BASE_URL, {
-  transports: ['polling', 'websocket'],
-  reconnectionAttempts: 10,
-  autoConnect: true,
 });
 
 export default api;
