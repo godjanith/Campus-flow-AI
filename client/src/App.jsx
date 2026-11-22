@@ -4,8 +4,13 @@ import Dashboard from './pages/Dashboard';
 
 export default function App() {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('campusflow_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('campusflow_user');
+      return saved && saved !== 'undefined' ? JSON.parse(saved) : null;
+    } catch {
+      localStorage.removeItem('campusflow_user');
+      return null;
+    }
   });
 
   const handleLogout = () => {
