@@ -38,8 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
       _isRegister = false;
       _emailController.text = 'student@presidencyuniversity.in';
       _passController.text = 'student123';
-      _nameController.text = 'Janith V C';
-      _regNoController.text = '20252MCA0318';
+      _nameController.text = 'Campus Operations Member';
+      _regNoController.text = 'PU-STUDENT';
       _error = null;
       _infoBanner = 'Student credentials loaded. Tap Sign In or Instant Access.';
     });
@@ -77,13 +77,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final name = _nameController.text.trim().isNotEmpty
           ? _nameController.text.trim()
-          : 'Janith V C';
+          : 'Campus Operations Member';
       final email = _emailController.text.trim().isNotEmpty && _emailController.text.contains('@')
           ? _emailController.text.trim()
           : 'student@presidencyuniversity.in';
       final regNo = _regNoController.text.trim().isNotEmpty
           ? _regNoController.text.trim()
-          : '20252MCA0318';
+          : 'PU-STUDENT';
 
       final userData = await ApiService.demoLogin(
         name: name,
@@ -171,9 +171,9 @@ class _LoginScreenState extends State<LoginScreen> {
         });
         await Future.delayed(const Duration(milliseconds: 700));
         final fallbackUser = await ApiService.demoLogin(
-          name: name.isNotEmpty ? name : 'Janith V C',
+          name: name.isNotEmpty ? name : 'Campus Operations Member',
           email: email,
-          regNo: regNo.isNotEmpty ? regNo : '20252MCA0318',
+          regNo: regNo.isNotEmpty ? regNo : 'PU-CAMPUS-OPS',
         );
         await _proceedToApp(fallbackUser);
       } else {
@@ -541,7 +541,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
                                 decoration: const InputDecoration(
                                   labelText: 'Full Legal Name *',
-                                  hintText: 'e.g. Janith V C',
+                                  hintText: 'e.g. Student / Member Name',
                                   prefixIcon: Icon(Icons.person_outline_rounded, color: AppTheme.primaryRoyalNavy),
                                 ),
                               ),
@@ -552,7 +552,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
                                 decoration: const InputDecoration(
                                   labelText: 'Student Registration Number *',
-                                  hintText: 'e.g. 20252MCA0318',
+                                  hintText: 'e.g. 20252MCA0101',
                                   prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.primaryRoyalNavy),
                                 ),
                               ),

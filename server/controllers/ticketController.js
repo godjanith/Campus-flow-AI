@@ -51,8 +51,8 @@ export const createTicket = async (req, res, next) => {
       triageEngineUsed: aiResult.triageEngineUsed,
       status: 'OPEN',
       reportedBy: {
-        name: reporterName || 'Janith V C',
-        regNo: reporterRegNo || '20252MCA0318',
+        name: reporterName || 'Campus Operations Member',
+        regNo: reporterRegNo || 'PU-STUDENT',
       },
       timeline: [
         {

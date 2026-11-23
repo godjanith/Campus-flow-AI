@@ -72,105 +72,11 @@ class AppProvider extends ChangeNotifier {
       _tickets = await ApiService.getTickets();
     } catch (e) {
       debugPrint('Failed to load tickets: $e');
-      if (_tickets.isEmpty) {
-        _tickets = _getDemoTickets();
-      }
+      _tickets = [];
     } finally {
       _isLoading = false;
       notifyListeners();
     }
-  }
-
-  List<Ticket> _getDemoTickets() {
-    final now = DateTime.now();
-    return [
-      Ticket(
-        id: 'demo_1',
-        ticketCode: 'CF-849201',
-        title: 'Exposed High-Voltage Conduit Sparking',
-        description: 'Corridor junction box near Lab 304 emitting sparks and ozone smell.',
-        building: 'Engineering Block A',
-        lat: 13.1723,
-        lng: 77.5366,
-        category: 'Electrical Safety',
-        severity: 'CRITICAL',
-        aiSummary: '[CRITICAL] Active electrical arcing hazard detected near Lab 304.',
-        estimatedResolutionTime: '20 mins',
-        safetyAdvisory: 'DANGER: Evacuate 10-meter radius immediately. Do not touch metal doorframe.',
-        triageEngineUsed: 'GEMINI_MULTIMODAL',
-        status: 'OPEN',
-        reporterName: 'Janith V C',
-        reporterRegNo: '20252MCA0318',
-        timeline: [
-          TimelineEntry(
-            status: 'OPEN',
-            note: 'Incident reported & triaged as CRITICAL by CampusFlow AI.',
-            timestamp: now.subtract(const Duration(minutes: 15)),
-          ),
-        ],
-        createdAt: now.subtract(const Duration(minutes: 15)),
-        updatedAt: now.subtract(const Duration(minutes: 15)),
-      ),
-      Ticket(
-        id: 'demo_2',
-        ticketCode: 'CF-392014',
-        title: 'Chilled Water Pipe Leak Flooding Lobby',
-        description: 'Overhead HVAC chilled water line leaking onto granite tiles.',
-        building: 'Auditorium Complex',
-        lat: 13.1712,
-        lng: 77.5355,
-        category: 'Plumbing & Water',
-        severity: 'HIGH',
-        aiSummary: '[HIGH] Chilled water line rupture causing severe slip hazard.',
-        estimatedResolutionTime: '45 mins',
-        safetyAdvisory: 'Caution: Wet granite flooring. Use West Wing entrance.',
-        triageEngineUsed: 'GEMINI_MULTIMODAL',
-        status: 'IN_PROGRESS',
-        reporterName: 'Janith V C',
-        reporterRegNo: '20252MCA0318',
-        timeline: [
-          TimelineEntry(
-            status: 'IN_PROGRESS',
-            note: 'Plumbing crew dispatched with water containment unit.',
-            timestamp: now.subtract(const Duration(minutes: 10)),
-          ),
-          TimelineEntry(
-            status: 'OPEN',
-            note: 'Automated triage completed.',
-            timestamp: now.subtract(const Duration(minutes: 35)),
-          ),
-        ],
-        createdAt: now.subtract(const Duration(minutes: 35)),
-        updatedAt: now.subtract(const Duration(minutes: 10)),
-      ),
-      Ticket(
-        id: 'demo_3',
-        ticketCode: 'CF-119384',
-        title: 'Wi-Fi Access Point Offline in Lab 202',
-        description: 'Lab 202 primary AP is unresponsive; students cannot access internal portals.',
-        building: 'Engineering Block B',
-        lat: 13.1718,
-        lng: 77.5361,
-        category: 'IT & Network',
-        severity: 'MEDIUM',
-        aiSummary: '[MEDIUM] Network node degradation affecting student workstations.',
-        estimatedResolutionTime: '1 hour',
-        safetyAdvisory: 'No physical hazard. Use 5GHz backup SSID if required.',
-        triageEngineUsed: 'OFFLINE_NLP_HEURISTIC',
-        status: 'RESOLVED',
-        reporterName: 'Rahul R',
-        reporterRegNo: '20252MCA0301',
-        timeline: [
-          TimelineEntry(
-            status: 'RESOLVED',
-            note: 'Switch port power-cycled. Access point fully operational.',
-            timestamp: now.subtract(const Duration(minutes: 5)),
-          ),
-        ],
-        createdAt: now.subtract(const Duration(hours: 2)),
-        updatedAt: now.subtract(const Duration(minutes: 5)),
-      ),
-    ];
   }
 
   Future<void> syncOfflineQueueNow() async {

@@ -32,17 +32,17 @@ class _TicketsScreenState extends State<TicketsScreen> {
     final provider = context.watch<AppProvider>();
     final allTickets = provider.tickets;
     final currentUser = provider.user;
-    final currentRegNo = currentUser?['regNo'] as String? ?? '20252MCA0318';
-    final currentName = (currentUser?['name'] as String? ?? 'Janith V C').toLowerCase();
+    final currentRegNo = (currentUser?['regNo'] as String? ?? '').toLowerCase();
+    final currentName = (currentUser?['name'] as String? ?? '').toLowerCase();
 
     // 1. Filter by Scope ("ALL" vs "MY")
     final scopedTickets = _scope == 'MY'
         ? allTickets.where((t) {
             final tReg = t.reporterRegNo.toLowerCase();
             final tName = t.reporterName.toLowerCase();
-            return tReg == currentRegNo.toLowerCase() ||
-                tName.contains(currentName) ||
-                currentName.contains(tName);
+            if (currentRegNo.isNotEmpty && tReg == currentRegNo) return true;
+            if (currentName.isNotEmpty && (tName.contains(currentName) || currentName.contains(tName))) return true;
+            return false;
           }).toList()
         : allTickets;
 

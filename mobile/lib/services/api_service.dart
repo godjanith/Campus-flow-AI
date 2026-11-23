@@ -101,12 +101,12 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> demoLogin({
-    String name = 'Janith V C',
+    String name = 'Campus Operations Member',
     String email = 'student@presidencyuniversity.in',
-    String regNo = '20252MCA0318',
+    String regNo = 'PU-STUDENT',
   }) async {
     final data = {
-      '_id': 'demo_user_20252MCA0318',
+      '_id': 'demo_user_student',
       'name': name,
       'email': email,
       'role': 'STUDENT',

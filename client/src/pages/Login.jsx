@@ -46,7 +46,7 @@ export default function Login({ onLoginSuccess }) {
           name: name.trim(),
           email: email.trim(),
           password,
-          regNo: regNo.trim() || '20252MCA0318',
+          regNo: regNo.trim() || 'PU-STUDENT',
           role,
         });
 
@@ -194,7 +194,7 @@ export default function Login({ onLoginSuccess }) {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Janith V C"
+                    placeholder="e.g. Student / Member Name"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-3.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[#0F294A] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0F294A]/10 transition"
                   />
                 </div>
@@ -211,7 +211,7 @@ export default function Login({ onLoginSuccess }) {
                       type="text"
                       value={regNo}
                       onChange={(e) => setRegNo(e.target.value)}
-                      placeholder="20252MCA0318"
+                      placeholder="e.g. 20252MCA0101"
                       className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-3.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[#0F294A] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0F294A]/10 transition"
                     />
                   </div>

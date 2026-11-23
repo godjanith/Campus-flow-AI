@@ -420,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: Border.all(color: AppTheme.cardBorder),
                 ),
                 child: Text(
-                  'Reg: ${user?['regNo'] as String? ?? '20252MCA0318'} • ${user?['role'] as String? ?? 'STUDENT'}',
+                  'Role: ${user?['role'] as String? ?? 'CAMPUS_MEMBER'} • Presidency Operations Node',
                   style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryRoyalNavy),
                 ),
               ),
@@ -514,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         Text(
-                          user?['name'] as String? ?? 'Presidency University Official Portal',
+                          'Presidency University Operations Portal',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(

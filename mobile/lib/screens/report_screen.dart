@@ -199,8 +199,8 @@ class _ReportScreenState extends State<ReportScreen> {
     final title = _titleController.text.trim();
     final desc = _descController.text.trim();
     final building = _selectedBuilding;
-    final reporterName = user?['name'] as String? ?? 'Campus Student';
-    final reporterRegNo = user?['regNo'] as String? ?? '20252MCA0318';
+    final reporterName = user?['name'] as String? ?? 'Campus Member';
+    final reporterRegNo = user?['regNo'] as String? ?? 'PU-STUDENT';
 
     setState(() => _isSubmitting = true);
 

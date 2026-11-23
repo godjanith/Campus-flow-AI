@@ -31,8 +31,8 @@ export default function SimulateReportModal({ isOpen, onClose }) {
       formData.append('building', building);
       formData.append('lat', selectedBldg.lat + (Math.random() - 0.5) * 0.0003);
       formData.append('lng', selectedBldg.lng + (Math.random() - 0.5) * 0.0003);
-      formData.append('reporterName', 'Janith V C (Web Simulator)');
-      formData.append('reporterRegNo', '20252MCA0318');
+      formData.append('reporterName', 'Campus Operations Simulator');
+      formData.append('reporterRegNo', 'PU-SIM-NODE');
       if (image) {
         formData.append('image', image);
       }
