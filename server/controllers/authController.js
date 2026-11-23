@@ -50,12 +50,25 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'An account with this email already exists. Please sign in instead.' });
     }
 
+    // Strictly permit only STUDENT and FACULTY_COORDINATOR registrations
+    const normalizedRole = (role || 'STUDENT').toUpperCase().replace(/\s+/g, '_');
+    const validRoles = ['STUDENT', 'FACULTY_COORDINATOR'];
+
+    if (!validRoles.includes(normalizedRole)) {
+      return res.status(400).json({
+        message: 'Self-registration is only permitted for Students and Faculty Coordinators. Administrative accounts require IT command provisioning.',
+      });
+    }
+
+    const defaultReg = normalizedRole === 'FACULTY_COORDINATOR' ? 'PU-FAC-EMP' : 'PU-STUDENT';
+    const finalRegNo = (regNo && regNo.trim().length > 0) ? regNo.trim() : defaultReg;
+
     const user = await User.create({
       name: name.trim(),
       email: cleanEmail,
       password,
-      regNo: (regNo && regNo.trim().length > 0) ? regNo.trim() : '20252MCA0318',
-      role: role || 'STUDENT',
+      regNo: finalRegNo,
+      role: normalizedRole,
     });
 
     return res.status(201).json({

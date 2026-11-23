@@ -191,8 +191,15 @@ export default function Dashboard({ user, onLogout }) {
       <header className="sticky top-0 z-[500] border-b-2 border-b-[#C59B27] bg-[#0F294A] text-white shadow-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-[#C59B27] shadow-sm border border-[#C59B27]/40">
-              <BoltIcon className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 p-1 shadow-sm border border-[#C59B27]/40 overflow-hidden">
+              <img
+                src="/presidency_logo.png"
+                alt="Presidency University"
+                className="h-full w-full object-contain"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">

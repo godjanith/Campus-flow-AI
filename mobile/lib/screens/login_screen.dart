@@ -19,41 +19,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passController = TextEditingController();
   final _nameController = TextEditingController();
   final _regNoController = TextEditingController();
+
   bool _isLoading = false;
   bool _isRegister = false;
   bool _obscurePassword = true;
+  String _selectedRole = 'STUDENT'; // Only 'STUDENT' or 'FACULTY_COORDINATOR' allowed
   String? _error;
   String? _infoBanner;
 
   @override
   void initState() {
     super.initState();
-    _emailController.text = 'student@presidencyuniversity.in';
-    _passController.text = 'student123';
+    _emailController.text = '';
+    _passController.text = '';
   }
 
-  void _fillStudentDemo() {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _isRegister = false;
-      _emailController.text = 'student@presidencyuniversity.in';
-      _passController.text = 'student123';
-      _nameController.text = 'Campus Operations Member';
-      _regNoController.text = 'PU-STUDENT';
-      _error = null;
-      _infoBanner = 'Student credentials loaded. Tap Sign In or Instant Access.';
-    });
-  }
-
-  void _fillAdminDemo() {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _isRegister = false;
-      _emailController.text = 'admin@presidencyuniversity.in';
-      _passController.text = 'adminpassword123';
-      _error = null;
-      _infoBanner = 'Facility Administrator credentials loaded.';
-    });
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passController.dispose();
+    _nameController.dispose();
+    _regNoController.dispose();
+    super.dispose();
   }
 
   Future<void> _proceedToApp(Map<String, dynamic> userData) async {
@@ -68,37 +55,8 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _loginInstantDemo() async {
-    HapticFeedback.mediumImpact();
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final name = _nameController.text.trim().isNotEmpty
-          ? _nameController.text.trim()
-          : 'Campus Operations Member';
-      final email = _emailController.text.trim().isNotEmpty && _emailController.text.contains('@')
-          ? _emailController.text.trim()
-          : 'student@presidencyuniversity.in';
-      final regNo = _regNoController.text.trim().isNotEmpty
-          ? _regNoController.text.trim()
-          : 'PU-STUDENT';
-
-      final userData = await ApiService.demoLogin(
-        name: name,
-        email: email,
-        regNo: regNo,
-      );
-      await _proceedToApp(userData);
-    } catch (e) {
-      setState(() => _error = e.toString());
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
   Future<void> _submit() async {
+    HapticFeedback.mediumImpact();
     var email = _emailController.text.trim();
     final pass = _passController.text;
     final name = _nameController.text.trim();
@@ -118,14 +76,14 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
 
-    // Validation
+    // Input Validation
     if (_isRegister && name.isEmpty) {
       setState(() => _error = 'Please enter your full name');
       return;
     }
 
     if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
-      setState(() => _error = 'Please enter a valid email (e.g. name@presidencyuniversity.in)');
+      setState(() => _error = 'Please enter a valid institutional email (e.g. name@presidencyuniversity.in)');
       return;
     }
 
@@ -148,11 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       Map<String, dynamic> userData;
       if (_isRegister) {
+        final defaultReg = _selectedRole == 'FACULTY_COORDINATOR' ? 'PU-FAC-EMP' : 'PU-STUDENT';
         userData = await ApiService.register(
           name: name,
           email: email,
           password: pass,
-          regNo: regNo.isNotEmpty ? regNo : '20252MCA0318',
+          regNo: regNo.isNotEmpty ? regNo : defaultReg,
+          role: _selectedRole,
         );
       } else {
         userData = await ApiService.login(email, pass);
@@ -160,7 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
       await _proceedToApp(userData);
     } catch (e) {
       final msg = e.toString().replaceFirst('Exception: ', '');
-      // If network/server unreachable, offer auto-login fallback so user is NEVER blocked!
       if (msg.contains('Server unreachable') ||
           msg.contains('Connection refused') ||
           msg.contains('Network connection error') ||
@@ -169,11 +128,11 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _infoBanner = 'Backend offline. Launching resilient local session...';
         });
-        await Future.delayed(const Duration(milliseconds: 700));
+        await Future.delayed(const Duration(milliseconds: 600));
         final fallbackUser = await ApiService.demoLogin(
           name: name.isNotEmpty ? name : 'Campus Operations Member',
           email: email,
-          regNo: regNo.isNotEmpty ? regNo : 'PU-CAMPUS-OPS',
+          regNo: regNo.isNotEmpty ? regNo : 'PU-STUDENT',
         );
         await _proceedToApp(fallbackUser);
       } else {
@@ -185,28 +144,19 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passController.dispose();
-    _nameController.dispose();
-    _regNoController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.crispIvory,
       body: Column(
         children: [
-          // ── Official Royal Navy Header Banner with Gold Trim ────────────────
+          // ── Official Royal Navy Header Banner with Official University Logo ──
           Container(
             width: double.infinity,
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 16,
-              bottom: 16,
-              left: 20,
-              right: 20,
+              top: MediaQuery.of(context).padding.top + 14,
+              bottom: 14,
+              left: 18,
+              right: 18,
             ),
             decoration: const BoxDecoration(
               color: AppTheme.primaryRoyalNavy,
@@ -227,7 +177,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  height: 42,
+                  width: 42,
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: AppTheme.purePorcelain.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
@@ -236,13 +188,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 1,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.account_balance_rounded,
-                    color: AppTheme.secondaryRoyalGold,
-                    size: 26,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      'assets/images/presidency_logo.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.account_balance_rounded,
+                        color: AppTheme.secondaryRoyalGold,
+                        size: 24,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         'CampusFlow AI',
                         style: GoogleFonts.merriweather(
                           color: AppTheme.purePorcelain,
-                          fontSize: 18,
+                          fontSize: 17,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
                         ),
@@ -290,11 +249,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        'v2.4 Pro',
+                        'OFFICIAL CAS',
                         style: GoogleFonts.inter(
                           color: AppTheme.purePorcelain,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
@@ -308,18 +267,19 @@ class _LoginScreenState extends State<LoginScreen> {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 480),
                   child: Column(
                     children: [
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
 
-                      // Institutional Emblem Badge
+                      // Institutional Emblem with Uploaded Logo
                       Container(
-                        width: 68,
-                        height: 68,
+                        width: 72,
+                        height: 72,
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: AppTheme.purePorcelain,
                           shape: BoxShape.circle,
@@ -332,11 +292,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.school_rounded,
-                            size: 36,
-                            color: AppTheme.primaryRoyalNavy,
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/presidency_logo.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Center(
+                              child: Icon(Icons.school_rounded, size: 36, color: AppTheme.primaryRoyalNavy),
+                            ),
                           ),
                         ),
                       ),
@@ -345,7 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'FACILITY & SAFETY DESK',
                         style: GoogleFonts.inter(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.5,
                           color: AppTheme.secondaryRoyalGold,
@@ -353,23 +315,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _isRegister ? 'Student Registration' : 'Institutional Sign In',
+                        _isRegister ? 'Portal Registration' : 'Institutional Sign In',
                         style: GoogleFonts.merriweather(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
-                        'Authorized access for students, staff, and facility dispatchers',
+                        _isRegister
+                          ? 'Registration strictly for Students & Faculty Coordinators'
+                          : 'Enter your verified university credentials to access operations',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: AppTheme.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // Pure Porcelain Card Surface
                       Container(
@@ -401,10 +365,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 children: [
                                   Expanded(
                                     child: GestureDetector(
-                                      onTap: () => setState(() {
-                                        _isRegister = false;
-                                        _error = null;
-                                      }),
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        setState(() {
+                                          _isRegister = false;
+                                          _error = null;
+                                          _infoBanner = null;
+                                        });
+                                      },
                                       child: AnimatedContainer(
                                         duration: const Duration(milliseconds: 180),
                                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -435,10 +403,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   Expanded(
                                     child: GestureDetector(
-                                      onTap: () => setState(() {
-                                        _isRegister = true;
-                                        _error = null;
-                                      }),
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        setState(() {
+                                          _isRegister = true;
+                                          _error = null;
+                                          _infoBanner = null;
+                                        });
+                                      },
                                       child: AnimatedContainer(
                                         duration: const Duration(milliseconds: 180),
                                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -533,33 +505,73 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
 
-                            // Register Fields
+                            // ── Registration-Only Fields ──────────────────────────
                             if (_isRegister) ...[
+                              // Full Legal Name
                               TextField(
                                 controller: _nameController,
                                 textCapitalization: TextCapitalization.words,
                                 style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
                                 decoration: const InputDecoration(
                                   labelText: 'Full Legal Name *',
-                                  hintText: 'e.g. Student / Member Name',
+                                  hintText: 'e.g. Student / Faculty Name',
                                   prefixIcon: Icon(Icons.person_outline_rounded, color: AppTheme.primaryRoyalNavy),
                                 ),
                               ),
                               const SizedBox(height: 12),
+
+                              // Campus Role Selector (ONLY Student or Faculty Coordinator)
+                              DropdownButtonFormField<String>(
+                                initialValue: _selectedRole,
+                                dropdownColor: AppTheme.purePorcelain,
+                                style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
+                                decoration: const InputDecoration(
+                                  labelText: 'Campus Role *',
+                                  prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.primaryRoyalNavy),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'STUDENT',
+                                    child: Text('Student Member'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'FACULTY_COORDINATOR',
+                                    child: Text('Faculty Coordinator'),
+                                  ),
+                                ],
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    HapticFeedback.selectionClick();
+                                    setState(() => _selectedRole = val);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Dynamic ID Field based on Role
                               TextField(
                                 controller: _regNoController,
                                 textCapitalization: TextCapitalization.characters,
                                 style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
-                                decoration: const InputDecoration(
-                                  labelText: 'Student Registration Number *',
-                                  hintText: 'e.g. 20252MCA0101',
-                                  prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.primaryRoyalNavy),
+                                decoration: InputDecoration(
+                                  labelText: _selectedRole == 'FACULTY_COORDINATOR'
+                                      ? 'Faculty Employee ID *'
+                                      : 'Student Registration / Roll No. *',
+                                  hintText: _selectedRole == 'FACULTY_COORDINATOR'
+                                      ? 'e.g. PU-FAC-1042'
+                                      : 'e.g. 20252MCA0101',
+                                  prefixIcon: Icon(
+                                    _selectedRole == 'FACULTY_COORDINATOR'
+                                        ? Icons.work_outline_rounded
+                                        : Icons.school_outlined,
+                                    color: AppTheme.primaryRoyalNavy,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 12),
                             ],
 
-                            // Email Field
+                            // ── Common Fields (Email & Password) ──────────────────
                             TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -567,13 +579,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
                               decoration: const InputDecoration(
                                 labelText: 'Institutional Email Address *',
-                                hintText: 'student@presidencyuniversity.in',
+                                hintText: 'name@presidencyuniversity.in',
                                 prefixIcon: Icon(Icons.mail_outline_rounded, color: AppTheme.primaryRoyalNavy),
                               ),
                             ),
                             const SizedBox(height: 12),
 
-                            // Password Field
                             TextField(
                               controller: _passController,
                               obscureText: _obscurePassword,
@@ -609,7 +620,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
                                     )
                                   : Text(
-                                      _isRegister ? 'Register Institutional Account' : 'Authenticate & Enter',
+                                      _isRegister ? 'Register Verified Account' : 'Authenticate & Enter',
                                       style: GoogleFonts.inter(
                                         color: AppTheme.purePorcelain,
                                         fontWeight: FontWeight.w700,
@@ -618,96 +629,64 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                             ),
-                            const SizedBox(height: 14),
-
-                            // Instant Demo Access Button
-                            OutlinedButton.icon(
-                              onPressed: _isLoading ? null : _loginInstantDemo,
-                              icon: const Icon(Icons.flash_on_rounded, size: 18, color: AppTheme.secondaryRoyalGold),
-                              label: Text(
-                                'Instant Demo Access (Offline Resilient)',
-                                style: GoogleFonts.inter(
-                                  color: AppTheme.primaryRoyalNavy,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppTheme.cardBorder, width: 1.2),
-                                backgroundColor: AppTheme.surfaceLight,
-                                padding: const EdgeInsets.symmetric(vertical: 13),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            ),
                             const SizedBox(height: 18),
 
-                            // Quick Fill Autofill Chips
-                            Row(
-                              children: [
-                                const Expanded(child: Divider(color: AppTheme.cardBorder)),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  child: Text(
-                                    'OFFICIAL DEMO PRESETS',
-                                    style: GoogleFonts.inter(
-                                      color: AppTheme.textMuted,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.8,
-                                    ),
+                            // Institutional Central Authentication (CAS) Helpdesk Box (Replaced Demo Pills)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceLight,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.verified_user_rounded, size: 16, color: AppTheme.primaryRoyalNavy),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Presidency University Central CAS',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.primaryRoyalNavy,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                const Expanded(child: Divider(color: AppTheme.cardBorder)),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: _fillStudentDemo,
-                                    icon: const Icon(Icons.school_outlined, size: 16, color: AppTheme.primaryRoyalNavy),
-                                    label: Text(
-                                      'Student Demo',
-                                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                      backgroundColor: AppTheme.purePorcelain,
-                                      side: const BorderSide(color: AppTheme.cardBorder),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _isRegister
+                                        ? 'Self-registration is restricted to Students and Faculty Coordinators. Facility Administration is provisioned by University IT.'
+                                        : 'Need account assistance or password reset? Contact University Operations Helpdesk.',
+                                    style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary, height: 1.3),
                                   ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: _fillAdminDemo,
-                                    icon: const Icon(Icons.admin_panel_settings_outlined, size: 16, color: AppTheme.secondaryRoyalGold),
-                                    label: Text(
-                                      'Admin Demo',
-                                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                      backgroundColor: AppTheme.purePorcelain,
-                                      side: const BorderSide(color: AppTheme.cardBorder),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.headset_mic_outlined, size: 13, color: AppTheme.secondaryRoyalGold),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'it.helpdesk@presidencyuniversity.in • Ext. 100',
+                                        style: GoogleFonts.robotoMono(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 22),
 
                       // Footer Security & Accreditation Info
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.security_rounded, size: 14, color: AppTheme.textSecondary),
+                          const Icon(Icons.shield_outlined, size: 14, color: AppTheme.textSecondary),
                           const SizedBox(width: 6),
                           Text(
                             'Presidency University Infrastructure & Facilities Desk',
@@ -721,7 +700,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Secured via Mernova Multi-Agent AI Core',
+                        'Secured via 256-bit TLS • Autonomous Spatial AI Dispatch',
                         style: GoogleFonts.inter(
                           color: AppTheme.textMuted,
                           fontSize: 10,

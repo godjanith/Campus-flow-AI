@@ -6,8 +6,8 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
-    role: { type: String, enum: ['STUDENT', 'ADMIN'], default: 'STUDENT' },
-    regNo: { type: String, default: '20252MCA0318' },
+    role: { type: String, enum: ['STUDENT', 'FACULTY_COORDINATOR', 'ADMIN'], default: 'STUDENT' },
+    regNo: { type: String, default: 'PU-STUDENT' },
   },
   { timestamps: true }
 );

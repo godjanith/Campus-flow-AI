@@ -60,8 +60,11 @@ class ApiService {
     required String email,
     required String password,
     String? regNo,
+    String role = 'STUDENT',
   }) async {
     try {
+      final normalizedRole = role == 'FACULTY_COORDINATOR' ? 'FACULTY_COORDINATOR' : 'STUDENT';
+      final defaultReg = normalizedRole == 'FACULTY_COORDINATOR' ? 'PU-FAC-EMP' : 'PU-STUDENT';
       final response = await http
           .post(
             Uri.parse('${AppConfig.baseUrl}/auth/register'),
@@ -70,8 +73,8 @@ class ApiService {
               'name': name.trim(),
               'email': email.trim().toLowerCase(),
               'password': password,
-              'regNo': (regNo != null && regNo.trim().isNotEmpty) ? regNo.trim() : '20252MCA0318',
-              'role': 'STUDENT',
+              'regNo': (regNo != null && regNo.trim().isNotEmpty) ? regNo.trim() : defaultReg,
+              'role': normalizedRole,
             }),
           )
           .timeout(_timeout);

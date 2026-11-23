@@ -2,6 +2,10 @@
 
 <img src="docs/images/hero-banner.svg" alt="CampusFlow AI Hero Banner" width="100%" />
 
+<br/>
+
+<img src="docs/images/presidency_logo.png" alt="Presidency University Official Emblem" width="160" />
+
 # CampusFlow AI
 ### Autonomous Spatial Infrastructure Intelligence & Multimodal Incident Triage Ecosystem
 **Presidency University • Official University Flagship Operations Portal**

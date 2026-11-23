@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ShieldCheck,
-  Zap,
   ArrowRight,
   AlertCircle,
   Lock,
@@ -9,7 +8,7 @@ import {
   User,
   GraduationCap,
   CheckCircle2,
-  Sparkles,
+  HelpCircle,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -24,13 +23,6 @@ export default function Login({ onLoginSuccess }) {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const handlePreset = (presetEmail, presetPass) => {
-    setEmail(presetEmail);
-    setPassword(presetPass);
-    setIsRegister(false);
-    setError('');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -42,22 +34,25 @@ export default function Login({ onLoginSuccess }) {
         if (!name.trim()) throw new Error('Please enter your full name');
         if (password.length < 6) throw new Error('Password must be at least 6 characters');
 
+        const finalRole = role === 'FACULTY_COORDINATOR' ? 'FACULTY_COORDINATOR' : 'STUDENT';
+        const defaultReg = finalRole === 'FACULTY_COORDINATOR' ? 'PU-FAC-EMP' : 'PU-STUDENT';
+
         const { data } = await api.post('/auth/register', {
           name: name.trim(),
-          email: email.trim(),
+          email: email.trim().toLowerCase(),
           password,
-          regNo: regNo.trim() || 'PU-STUDENT',
-          role,
+          regNo: regNo.trim() || defaultReg,
+          role: finalRole,
         });
 
         const userData = data.user || data;
         localStorage.setItem('campusflow_token', data.token);
         localStorage.setItem('campusflow_user', JSON.stringify(userData));
-        setSuccessMsg('Registration successful! Launching command center...');
+        setSuccessMsg('Account registered successfully! Entering Command Center...');
         setTimeout(() => onLoginSuccess(userData), 400);
       } else {
         const { data } = await api.post('/auth/login', {
-          email: email.trim(),
+          email: email.trim().toLowerCase(),
           password,
         });
 
@@ -70,7 +65,7 @@ export default function Login({ onLoginSuccess }) {
       setError(
         err.response?.data?.message ||
           err.message ||
-          'Authentication failed. Please verify credentials or connection.'
+          'Authentication failed. Please verify credentials or server connection.'
       );
     } finally {
       setLoading(false);
@@ -80,11 +75,18 @@ export default function Login({ onLoginSuccess }) {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#F8FAFC]">
       <div className="w-full max-w-lg rounded-3xl border border-slate-200/90 bg-white p-8 shadow-2xl shadow-slate-900/5">
-        {/* Flagship Header */}
+        {/* Official University Flagship Header with Uploaded Logo */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0F294A] text-[#C59B27] shadow-md shadow-[#0F294A]/20 border border-[#C59B27]/40">
-              <Zap className="h-6 w-6" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0F294A] p-1.5 shadow-md shadow-[#0F294A]/20 border border-[#C59B27]/40 overflow-hidden">
+              <img
+                src="/presidency_logo.png"
+                alt="Presidency University Official Logo"
+                className="h-full w-full object-contain"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -98,7 +100,7 @@ export default function Login({ onLoginSuccess }) {
             </div>
           </div>
           <span className="rounded-full border border-amber-300/80 bg-amber-50 px-2.5 py-1 font-mono text-[10px] font-extrabold text-[#0F294A]">
-            v2.0 FLAGSHIP
+            OFFICIAL CAS
           </span>
         </div>
 
@@ -109,6 +111,7 @@ export default function Login({ onLoginSuccess }) {
             onClick={() => {
               setIsRegister(false);
               setError('');
+              setSuccessMsg('');
             }}
             className={`rounded-xl py-2 text-xs font-bold transition ${
               !isRegister
@@ -123,6 +126,7 @@ export default function Login({ onLoginSuccess }) {
             onClick={() => {
               setIsRegister(true);
               setError('');
+              setSuccessMsg('');
             }}
             className={`rounded-xl py-2 text-xs font-bold transition ${
               isRegister
@@ -130,39 +134,22 @@ export default function Login({ onLoginSuccess }) {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Register Member
+            Register Account
           </button>
         </div>
 
-        {/* Demo Fast-Login Pills (For Competitions & Judges) */}
-        {!isRegister && (
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#C59B27]" />
-                One-Click Demo Credentials
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handlePreset('admin@presidencyuniversity.in', 'adminpassword123')}
-                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left hover:border-[#0F294A] transition shadow-xs"
-              >
-                <p className="text-[11px] font-bold text-[#0F294A]">Commander (Admin)</p>
-                <p className="text-[10px] text-slate-500 font-mono truncate">admin@presidencyuniversity.in</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePreset('student@presidencyuniversity.in', 'student123')}
-                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left hover:border-[#0F294A] transition shadow-xs"
-              >
-                <p className="text-[11px] font-bold text-[#0F294A]">Campus Student</p>
-                <p className="text-[10px] text-slate-500 font-mono truncate">student@presidencyuniversity.in</p>
-              </button>
-            </div>
+        {/* Central Institutional Security Banner (Replaced demo pills) */}
+        <div className="mb-6 rounded-2xl border border-[#0F294A]/10 bg-[#0F294A]/[0.03] p-3.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#0F294A]">
+            <ShieldCheck className="h-4 w-4 text-[#C59B27] shrink-0" />
+            <span>Presidency University Central Authentication Service</span>
           </div>
-        )}
+          <p className="mt-1 text-xs leading-relaxed text-slate-500">
+            {isRegister
+              ? 'Institutional registration is strictly reserved for Students and Faculty Coordinators. Use your university credentials to establish your access profile.'
+              : 'Enter your registered university email and password to open the live spatial infrastructure command console.'}
+          </p>
+        </div>
 
         {/* Feedback Alerts */}
         {error && (
@@ -194,7 +181,7 @@ export default function Login({ onLoginSuccess }) {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Student / Member Name"
+                    placeholder="e.g. Student / Faculty Name"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-3.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[#0F294A] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0F294A]/10 transition"
                   />
                 </div>
@@ -203,23 +190,7 @@ export default function Login({ onLoginSuccess }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                    Reg / Roll No.
-                  </label>
-                  <div className="relative">
-                    <GraduationCap className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      value={regNo}
-                      onChange={(e) => setRegNo(e.target.value)}
-                      placeholder="e.g. 20252MCA0101"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-3.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[#0F294A] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0F294A]/10 transition"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                    Campus Role
+                    Campus Role *
                   </label>
                   <select
                     value={role}
@@ -227,10 +198,25 @@ export default function Login({ onLoginSuccess }) {
                     className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-3 text-sm font-medium text-slate-900 focus:border-[#0F294A] focus:bg-white focus:outline-none"
                   >
                     <option value="STUDENT">Student</option>
-                    <option value="FACULTY">Faculty Member</option>
-                    <option value="STAFF">Campus Staff</option>
-                    <option value="ADMIN">Facility Commander</option>
+                    <option value="FACULTY_COORDINATOR">Faculty Coordinator</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    {role === 'FACULTY_COORDINATOR' ? 'Faculty Employee ID *' : 'Student Reg / Roll No. *'}
+                  </label>
+                  <div className="relative">
+                    <GraduationCap className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      required
+                      value={regNo}
+                      onChange={(e) => setRegNo(e.target.value)}
+                      placeholder={role === 'FACULTY_COORDINATOR' ? 'e.g. PU-FAC-1042' : 'e.g. 20252MCA0101'}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-3.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-[#0F294A] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0F294A]/10 transition"
+                    />
+                  </div>
                 </div>
               </div>
             </>
@@ -281,17 +267,23 @@ export default function Login({ onLoginSuccess }) {
                   ? 'Registering Account...'
                   : 'Authenticating...'
                 : isRegister
-                ? 'Create CampusFlow Account'
+                ? 'Create Verified Account'
                 : 'Enter Command Center'}
             </span>
             {!loading && <ArrowRight className="h-4 w-4 text-[#C59B27]" />}
           </button>
         </form>
 
-        {/* Security Footer Notice */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
-          <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-          <span>Presidency University AI Infrastructure Node • 256-bit TLS Encrypted</span>
+        {/* Security & Support Footer */}
+        <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col items-center gap-2 text-center">
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
+            <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
+            <span>Presidency University AI Infrastructure Node • 256-bit TLS Encrypted</span>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-slate-500">
+            <HelpCircle className="h-3 w-3 text-slate-400" />
+            <span>IT Helpdesk: <span className="font-mono text-slate-600">it.helpdesk@presidencyuniversity.in</span></span>
+          </div>
         </div>
       </div>
     </div>

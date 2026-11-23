@@ -487,16 +487,29 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(7),
+                    width: 38,
+                    height: 38,
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppTheme.purePorcelain.withValues(alpha: 0.12),
+                      color: AppTheme.purePorcelain,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppTheme.secondaryRoyalGold.withValues(alpha: 0.5),
-                        width: 1,
+                        color: AppTheme.secondaryRoyalGold,
+                        width: 1.5,
                       ),
                     ),
-                    child: const Icon(Icons.school_rounded, color: AppTheme.secondaryRoyalGold, size: 20),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.asset(
+                        'assets/images/presidency_logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.school_rounded,
+                          color: AppTheme.primaryRoyalNavy,
+                          size: 20,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
