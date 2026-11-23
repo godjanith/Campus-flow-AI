@@ -38,7 +38,7 @@ export const seedDemoIncidents = async () => {
       safetyAdvisory: 'DANGER: Evacuate 10-meter radius immediately. Do not touch metal doorframe.',
       triageEngineUsed: 'GEMINI_MULTIMODAL',
       status: 'OPEN',
-      reportedBy: { name: 'Janith V C', regNo: '20252MCA0318' },
+      reportedBy: { name: 'Campus Operations Member', regNo: 'PU-STUDENT' },
       timeline: [
         { status: 'OPEN', note: 'Incident reported & triaged as CRITICAL by CampusFlow AI.', timestamp: new Date(Date.now() - 15 * 60000) },
       ],
@@ -132,7 +132,7 @@ export const seedDemoIncidents = async () => {
       safetyAdvisory: 'Use handrail and watch step on 1st-floor stairwell landing.',
       triageEngineUsed: 'GEMINI_MULTIMODAL',
       status: 'RESOLVED',
-      reportedBy: { name: 'Janith V C', regNo: '20252MCA0318' },
+      reportedBy: { name: 'Campus Operations Member', regNo: 'PU-STUDENT' },
       timeline: [
         { status: 'OPEN', note: 'Civil hazard reported via mobile.', timestamp: new Date(Date.now() - 300 * 60000) },
         { status: 'IN_PROGRESS', note: 'Carpentry & civil team dispatched with anchors.', timestamp: new Date(Date.now() - 210 * 60000) },

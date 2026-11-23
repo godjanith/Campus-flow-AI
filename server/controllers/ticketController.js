@@ -162,6 +162,23 @@ export const deleteTicket = async (req, res, next) => {
   }
 };
 
+export const clearAllTickets = async (req, res, next) => {
+  try {
+    const result = await Ticket.deleteMany({});
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('tickets:cleared');
+    }
+    return res.json({
+      success: true,
+      message: `Successfully purged ${result.deletedCount} incidents from database.`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const seedDemoData = async (req, res, next) => {
   try {
     const inserted = await seedDemoIncidents();

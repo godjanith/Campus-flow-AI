@@ -54,6 +54,11 @@ class AppProvider extends ChangeNotifier {
       _tickets.removeWhere((t) => t.id == id);
       notifyListeners();
     });
+
+    _socketService.onTicketsCleared(() {
+      _tickets.clear();
+      notifyListeners();
+    });
   }
 
   Future<void> setUser(Map<String, dynamic> userData) async {
@@ -81,6 +86,18 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> syncOfflineQueueNow() async {
     await _syncOfflineQueue();
+  }
+
+  Future<void> purgeAllTickets() async {
+    try {
+      await ApiService.purgeAllTickets();
+      _tickets.clear();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Purge tickets error: $e');
+      _tickets.clear();
+      notifyListeners();
+    }
   }
 
   Future<void> updateTicketStatus(String ticketId, String newStatus, {String? note}) async {

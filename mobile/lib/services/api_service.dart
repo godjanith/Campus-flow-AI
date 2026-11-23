@@ -223,6 +223,16 @@ class ApiService {
     }
   }
 
+  static Future<void> purgeAllTickets() async {
+    final headers = await _authHeaders();
+    final response = await http
+        .delete(Uri.parse('${AppConfig.baseUrl}/tickets/purge/all'), headers: headers)
+        .timeout(_timeout);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to purge tickets');
+    }
+  }
+
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('jwt_token');

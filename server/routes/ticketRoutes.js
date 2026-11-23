@@ -7,6 +7,7 @@ import {
   getTicketsByStudent,
   updateTicketStatus,
   deleteTicket,
+  clearAllTickets,
   seedDemoData,
   chatWithSafetyCopilot,
   getCampusHealthScore,
@@ -36,6 +37,7 @@ router.post('/simulation/toggle', protect, (req, res) => {
 });
 
 router.post('/seed', protect, seedDemoData);
+router.delete('/purge/all', protect, clearAllTickets);
 router.patch('/:id/status', protect, updateTicketStatus);
 router.delete('/:id', protect, deleteTicket);
 

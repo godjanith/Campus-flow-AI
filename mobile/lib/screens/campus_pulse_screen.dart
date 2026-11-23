@@ -172,14 +172,13 @@ class _CampusPulseScreenState extends State<CampusPulseScreen> {
       return const Center(child: CircularProgressIndicator(color: AppTheme.primaryRoyalNavy));
     }
 
-    final total = _healthData?['total'] as int? ?? (tickets.isNotEmpty ? tickets.length : 14);
+    final total = _healthData?['total'] as int? ?? tickets.length;
     final open = _healthData?['open'] as int? ?? tickets.where((t) => t.status == 'OPEN').length;
     final inProgress = _healthData?['inProgress'] as int? ?? tickets.where((t) => t.status == 'IN_PROGRESS').length;
-    final resolved = _healthData?['resolved'] as int? ?? (tickets.isNotEmpty ? tickets.where((t) => t.status == 'RESOLVED').length : 9);
+    final resolved = _healthData?['resolved'] as int? ?? tickets.where((t) => t.status == 'RESOLVED').length;
     final critical = _healthData?['critical'] as int? ?? tickets.where((t) => t.severity == 'CRITICAL').length;
 
-    int score = _healthData?['healthScore'] as int? ?? (total > 0 ? (((resolved + (inProgress * 0.5)) / total) * 100).round() : 92);
-    if (score <= 0) score = 88;
+    int score = _healthData?['healthScore'] as int? ?? (total > 0 ? (((resolved + (inProgress * 0.5)) / total) * 100).round() : 100);
 
     Color scoreColor;
     Color scoreBgColor;
@@ -418,11 +417,35 @@ class _CampusPulseScreenState extends State<CampusPulseScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                _buildingBar('Engineering Block A', 0.94, '94% Normal', AppTheme.lowText),
-                _buildingBar('Auditorium Complex', 0.72, '72% Water Line In-Flight', AppTheme.highText),
-                _buildingBar('Engineering Block B', 0.98, '98% Optimal', AppTheme.lowText),
-                _buildingBar('Central Library', 0.88, '88% Optimal', AppTheme.lowText),
-                _buildingBar('Hostel Block', 0.91, '91% Optimal', AppTheme.lowText),
+                ...kPresidencyBuildings.map((b) {
+                  final buildingTickets = tickets.where((t) => t.building == b.name && t.status != 'RESOLVED').toList();
+                  final hasCritical = buildingTickets.any((t) => t.severity == 'CRITICAL');
+                  final hasHigh = buildingTickets.any((t) => t.severity == 'HIGH');
+
+                  double pct;
+                  String status;
+                  Color color;
+
+                  if (hasCritical) {
+                    pct = 0.45;
+                    status = 'Hazard Active';
+                    color = AppTheme.criticalText;
+                  } else if (hasHigh) {
+                    pct = 0.70;
+                    status = '${buildingTickets.length} In-Flight Action';
+                    color = AppTheme.highText;
+                  } else if (buildingTickets.isNotEmpty) {
+                    pct = 0.85;
+                    status = '${buildingTickets.length} Active Dispatch';
+                    color = AppTheme.primaryRoyalNavy;
+                  } else {
+                    pct = 1.0;
+                    status = '100% Nominal (All Clear)';
+                    color = AppTheme.lowText;
+                  }
+
+                  return _buildingBar(b.name, pct, status, color);
+                }),
               ],
             ),
           ),
@@ -464,9 +487,15 @@ class _CampusPulseScreenState extends State<CampusPulseScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _tickerEvent('Rapid response crew dispatched to Lab 304 electrical spark.', '3 mins ago'),
-                _tickerEvent('Chilled water extraction valve isolated outside Auditorium.', '14 mins ago'),
-                _tickerEvent('Library 2nd Floor AP mesh channel synchronized.', '32 mins ago'),
+                if (tickets.isEmpty) ...[
+                  _tickerEvent('All campus building telemetry sensors reporting nominal status.', 'Just now'),
+                  _tickerEvent('Autonomous spatial dispatch standby active across all university zones.', 'Online'),
+                ] else ...[
+                  ...tickets.take(3).map((t) {
+                    final note = t.timeline.isNotEmpty ? t.timeline.last.note : '${t.title} (${t.severity}) in ${t.building}';
+                    return _tickerEvent(note, 'Active');
+                  }),
+                ],
               ],
             ),
           ),

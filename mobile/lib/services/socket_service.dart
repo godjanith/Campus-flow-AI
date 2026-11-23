@@ -64,6 +64,13 @@ class SocketService {
     });
   }
 
+  void onTicketsCleared(void Function() callback) {
+    _socket.off('tickets:cleared');
+    _socket.on('tickets:cleared', (_) {
+      callback();
+    });
+  }
+
   void dispose() {
     _socket.dispose();
     _instance = null;

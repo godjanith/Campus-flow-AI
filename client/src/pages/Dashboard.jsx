@@ -11,6 +11,7 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   CpuChipIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 import api, { socket, API_BASE_URL } from '../services/api';
 import CampusMap from '../components/CampusMap';
@@ -72,6 +73,11 @@ export default function Dashboard({ user, onLogout }) {
       showToast('6 Campus Demo Incidents injected into MongoDB');
     });
 
+    socket.on('tickets:cleared', () => {
+      setTickets([]);
+      showToast('All campus hazards and incidents purged from database');
+    });
+
     socket.on('simulation:state', ({ running }) => {
       setSimRunning(running);
     });
@@ -83,6 +89,7 @@ export default function Dashboard({ user, onLogout }) {
       socket.off('ticket:updated');
       socket.off('ticket:deleted');
       socket.off('tickets:seeded');
+      socket.off('tickets:cleared');
       socket.off('simulation:state');
     };
   }, []);
@@ -109,6 +116,23 @@ export default function Dashboard({ user, onLogout }) {
       alert('Failed to seed demo incidents');
     } finally {
       setSeeding(false);
+    }
+  };
+
+  const handlePurgeAll = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to purge all active incident records? This will clear the campus hazard map and empty the complaints database.'
+      )
+    ) {
+      return;
+    }
+    try {
+      await api.delete('/tickets/purge/all');
+      setTickets([]);
+      showToast('All campus incident records have been purged.');
+    } catch (err) {
+      alert('Failed to purge incidents: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -262,6 +286,15 @@ export default function Dashboard({ user, onLogout }) {
             >
               <SparklesIcon className="h-4 w-4 text-amber-500" />
               {seeding ? 'Seeding...' : 'Seed 6 Incidents'}
+            </button>
+
+            <button
+              onClick={handlePurgeAll}
+              title="Empty all complaints and clear campus grid"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+            >
+              <TrashIcon className="h-4 w-4 text-rose-600" />
+              Empty Incidents
             </button>
 
             <button
