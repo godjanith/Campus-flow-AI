@@ -1,11 +1,5 @@
-import { io } from 'socket.io-client';
-
-const rawUrl =
-  import.meta.env.VITE_API_URL || 'https://campusflow-ai-server-doo6.onrender.com';
-const SOCKET_URL = rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
-
-const socket = io(SOCKET_URL, {
-  transports: ['websocket', 'polling'],
-});
-
+// This file is kept for backwards compatibility but the main socket
+// is now exported from api.js to prevent duplicate Socket.io connections.
+// Import from '../services/api' instead to get the shared socket instance.
+import { socket } from './api';
 export default socket;

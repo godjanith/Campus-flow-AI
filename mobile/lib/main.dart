@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'config/theme.dart';
+import 'providers/app_provider.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/api_service.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const CampusFlowApp());
 }
 
@@ -11,79 +16,57 @@ class CampusFlowApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CampusFlow AI',
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      home: const LoginScreen(),
-      debugShowCheckedModeBanner: false,
+    return ChangeNotifierProvider(
+      create: (_) => AppProvider(),
+      child: MaterialApp(
+        title: 'CampusFlow AI',
+        theme: AppTheme.lightTheme,
+        home: const AuthGate(),
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<AuthGate> createState() => _AuthGateState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'student@campusflow.ai');
-  final _passController = TextEditingController(text: 'password123');
-  bool _isLoading = false;
+class _AuthGateState extends State<AuthGate> {
+  bool _checking = true;
 
-  void _login() async {
-    setState(() => _isLoading = true);
-    try {
-      await ApiService.login(_emailController.text, _passController.text);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login Error: $e')));
-    } finally {
-      setState(() => _isLoading = false);
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final userData = await ApiService.getSavedUser();
+    if (userData != null && mounted) {
+      final provider = context.read<AppProvider>();
+      await provider.setUser(userData);
+      await provider.loadTickets();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     }
+    if (mounted) setState(() => _checking = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.slate[900],
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('CampusFlow AI Mobile', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _passController,
-                    obscureTest: true,
-                    decoration: const InputDecoration(labelText: 'Password'),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
-                    onPressed: _isLoading ? null : _login,
-                    child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Sign In'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+    if (_checking) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryRoyalNavy)),
+      );
+    }
+    return const LoginScreen();
   }
 }

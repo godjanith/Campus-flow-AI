@@ -60,4 +60,10 @@ const ticketSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ── Compound Indexes for sub-50ms queries ──────────────────────────
+ticketSchema.index({ status: 1, severity: 1, createdAt: -1 });
+ticketSchema.index({ category: 1, status: 1 });
+ticketSchema.index({ 'reportedBy.regNo': 1, createdAt: -1 });
+ticketSchema.index({ createdAt: -1 });
+
 export default mongoose.model('Ticket', ticketSchema);

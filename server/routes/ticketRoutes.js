@@ -4,10 +4,12 @@ import { protect } from '../middleware/authMiddleware.js';
 import {
   createTicket,
   getTickets,
+  getTicketsByStudent,
   updateTicketStatus,
   deleteTicket,
   seedDemoData,
   chatWithSafetyCopilot,
+  getCampusHealthScore,
 } from '../controllers/ticketController.js';
 import {
   startSimulation,
@@ -20,6 +22,8 @@ const router = express.Router();
 router.get('/', getTickets);
 router.post('/', upload.single('image'), createTicket);
 router.post('/chat', chatWithSafetyCopilot);
+router.get('/health-score', getCampusHealthScore);
+router.get('/student/:regNo', getTicketsByStudent);
 
 router.get('/simulation/status', (req, res) => {
   res.json({ running: isSimulationRunning() });
