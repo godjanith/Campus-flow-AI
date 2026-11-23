@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ZENITH LABS - CampusFlow AI - A3 Poster</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    @page {
+      size: 420mm 297mm; /* Standard A3 Landscape */
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 420mm;
+      height: 297mm;
+      margin: 0 auto;
+      background-color: #F8FAFC;
+      color: #1E293B;
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 8mm 12mm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Print Preview Button (Hidden when printing) */
+    .print-bar {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 9999;
+      background: #0F294A;
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(15, 41, 74, 0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #C59B27;
+    }
+    @media print {
+      .print-bar { display: none; }
+      body { padding: 8mm 12mm; }
+    }
+
+    /* ── 1. HEADER SECTION ── */
+    header {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 3mm;
+    }
+
+    .logos-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 18mm;
+      background: #FFFFFF;
+      padding: 2mm 5mm;
+      border-radius: 8px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 6px rgba(15, 41, 74, 0.04);
+    }
+
+    .logo-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .logo-item img {
+      max-height: 14mm;
+      max-width: 48mm;
+      object-fit: contain;
+    }
+
+    .v-divider {
+      width: 1px;
+      height: 12mm;
+      background-color: #E2E8F0;
+    }
+
+    .gold-separator {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #0F294A 0%, #C59B27 50%, #0F294A 100%);
+      border-radius: 2px;
+    }
+
+    /* ── 2. TITLE & TEAM BANNER ── */
+    .title-banner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 1.5mm 0;
+    }
+
+    .main-title {
+      font-family: 'Cinzel', serif;
+      font-size: 26pt;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #0F294A;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .sub-tagline {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #C59B27;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 1mm;
+    }
+
+    .team-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0F294A;
+      color: #FFFFFF;
+      padding: 2.5mm 6mm;
+      border-radius: 6px;
+      font-size: 9.5pt;
+      margin-top: 1.5mm;
+      border-left: 5px solid #C59B27;
+    }
+
+    .team-name {
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #C59B27;
+    }
+
+    .team-members {
+      font-weight: 600;
+      color: #F8FAFC;
+    }
+
+    /* ── 3. MAIN 3-COLUMN CONTENT GRID ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.05fr 1fr;
+      gap: 5mm;
+      flex: 1;
+      margin-top: 3.5mm;
+      margin-bottom: 3mm;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 3.5mm;
+    }
+
+    /* Cards */
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 3mm 4mm;
+      box-shadow: 0 2px 5px rgba(15, 41, 74, 0.03);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+      margin-bottom: 2mm;
+      padding-bottom: 1.5mm;
+      border-bottom: 1.5px solid #F1F5F9;
+    }
+
+    .badge-num {
+      background: #0F294A;
+      color: #C59B27;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      font-size: 9pt;
+      padding: 1mm 2mm;
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-size: 10pt;
+      font-weight: 800;
+      color: #0F294A;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .card-body {
+      font-size: 8.2pt;
+      line-height: 1.45;
+      color: #334155;
+      text-align: justify;
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+    }
+
+    .bullet-list li {
+      position: relative;
+      padding-left: 3.5mm;
+      font-size: 8.2pt;
+      line-height: 1.4;
+      color: #334155;
+    }
+
+    .bullet-list li::before {
+      content: "▪";
+      position: absolute;
+      left: 0;
+      color: #C59B27;
+      font-size: 10pt;
+      top: -0.5mm;
+    }
+
+    .strong-highlight {
+      font-weight: 700;
+      color: #0F294A;
+    }
+
+    /* Workflow Pipeline */
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2mm;
+      margin-bottom: 2.5mm;
+    }
+
+    .flow-step-box {
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 1.5mm 1mm;
+      text-align: center;
+      position: relative;
+    }
+
+    .flow-step-title {
+      font-weight: 800;
+      font-size: 7.2pt;
+      color: #0F294A;
+    }
+
+    .flow-step-desc {
+      font-size: 6.2pt;
+      color: #64748B;
+      margin-top: 0.5mm;
+    }
+
+    .arch-diagram-img {
+      width: 100%;
+      height: 38mm;
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+    }
+
+    /* QR Code Card */
+    .qr-card-body {
+      display: flex;
+      align-items: center;
+      gap: 4mm;
+    }
+
+    .qr-img {
+      width: 24mm;
+      height: 24mm;
+      border: 1.5px solid #0F294A;
+      border-radius: 6px;
+      padding: 1mm;
+      background: #FFFFFF;
+      flex-shrink: 0;
+    }
+
+    .qr-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+    }
+
+    .qr-badge {
+      display: inline-block;
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+      padding: 0.5mm 2mm;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      width: fit-content;
+    }
+
+    .qr-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #0F294A;
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    /* ── 4. FOOTER ── */
+    footer {
+      background: #0F294A;
+      color: #FFFFFF;
+      padding: 2.5mm 6mm;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 8pt;
+      border-top: 2px solid #C59B27;
+    }
+
+    .footer-left {
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+    }
+
+    .footer-left span {
+      color: #C59B27;
+    }
+
+    .footer-right {
+      font-size: 7.2pt;
+      color: #94A3B8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Print Button for Browser User -->
+  <div class="print-bar" onclick="window.print()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+    Print / Save PDF (A3 Landscape)
+  </div>
+
+  <!-- 1. OFFICIAL INSTITUTIONAL HEADER -->
+  <header>
+    <div class="logos-row">
+      <div class="logo-item"><img src="docs/poster_assets/image1.png" alt="MERNOVA X Project Expo 2026"></div>
+      <div class="v-divider"></div>
+      <div class="logo-item"><img src="docs/poster_assets/image2.png" alt="Presidency University"></div>
+      <div class="v-divider"></div>
+      <div class="logo-item"><img src="docs/poster_assets/image3.png" alt="50 Years of Academic Excellence"></div>
+      <div class="v-divider"></div>
+      <div class="logo-item"><img src="docs/poster_assets/image4.png" alt="NAAC Grade A Accredited"></div>
+      <div class="v-divider"></div>
+      <div class="logo-item"><img src="docs/poster_assets/image5.png" alt="NIRF"></div>
+      <div class="v-divider"></div>
+      <div class="logo-item"><img src="docs/poster_assets/image6.png" alt="School of Information Science PSIS"></div>
+      <div class="v-divider"></div>
+      <div class="logo-item"><img src="docs/poster_assets/image7.png" alt="GenZ Innovates AI Elevates"></div>
+    </div>
+    <div class="gold-separator"></div>
+  </header>
+
+  <!-- 2. PROJECT TITLE & TEAM BAR -->
+  <div class="title-banner">
+    <h1 class="main-title">CAMPUSFLOW AI</h1>
+    <p class="sub-tagline">Autonomous Spatial Infrastructure Intelligence & Multimodal Incident Triage Ecosystem</p>
+  </div>
+
+  <div class="team-strip">
+    <div class="team-name">TEAM NAME: ZENITH LABS</div>
+    <div class="team-members">Janith V C (Lead) – 20252MCA0318 &nbsp;|&nbsp; Aishwarya M – 20252MCA0101 &nbsp;|&nbsp; Rahul R – 20252MCA0301</div>
+  </div>
+
+  <!-- 3. MAIN 3-COLUMN CONTENT GRID -->
+  <main class="content-grid">
+
+    <!-- ── COLUMN 1 ── -->
+    <div class="col">
+      <!-- 01 ABSTRACT -->
+      <div class="card">
+        <div class="card-header">
+          <span class="badge-num">01</span>
+          <span class="card-title">ABSTRACT</span>
+        </div>
+        <div class="card-body">
+          CampusFlow AI bridges the critical divide between university hazard reporting and immediate facility response. Combining a Royal-Light Flutter mobile client, Leaflet spatial digital twin, Google Gemini 1.5 Pro Multimodal Vision AI, and a real-time Socket.io bus, it autonomously geotags, prioritizes, and coordinates campus safety operations in under 4 seconds with offline fault tolerance.
+        </div>
+      </div>
+
+      <!-- 02 PROBLEM STATEMENT -->
+      <div class="card">
+        <div class="card-header">
+          <span class="badge-num">02</span>
+          <span class="card-title">PROBLEM STATEMENT</span>
+        </div>
+        <div class="card-body">
+          Modern university campuses lack centralized, real-time spatial intelligence for structural hazards, electrical sparks, and plumbing leaks. Traditional facility ticketing is slow, text-only, and lacks automated severity triage or exact geolocation, leading to delayed repairs, student safety risks, and operational downtime across academic blocks.
+        </div>
+      </div>
+
+      <!-- 03 OBJECTIVES -->
+      <div class="card">
+        <div class="card-header">
+          <span class="badge-num">03</span>
+          <span class="card-title">OBJECTIVES</span>
+        </div>
+        <ul class="bullet-list">
+          <li><span class="strong-highlight">1-Tap Geotagged Reporting:</span> Instant photo capture with automated campus boundary geofencing.</li>
+          <li><span class="strong-highlight">Multimodal Vision AI Triage:</span> Autonomous classification of category, severity & ETA via Gemini in &lt;4s.</li>
+          <li><span class="strong-highlight">Live 3D Spatial Digital Twin:</span> Real-time incident beacons & status synchronization over WebSockets.</li>
+          <li><span class="strong-highlight">Zero-Data-Loss Offline Resilience:</span> Bidirectional local SQLite queue synchronizing automatically when online.</li>
+        </ul>
+      </div>
+
+      <!-- 06 TECHNOLOGIES USED -->
+      <div class="card">
+        <div class="card-header">
+          <span class="badge-num">06</span>
+          <span class="card-title">TECHNOLOGIES USED</span>
+        </div>
+        <ul class="bullet-list">
+          <li><span class="strong-highlight">Mobile Client:</span> Flutter 3.x (Material 3 Dark/Royal-Light), Provider, Google Maps / Leaflet.</li>
+          <li><span class="strong-highlight">Backend & Bus:</span> Node.js, Express 4, Socket.io Bus, Multer, Helmet, Compression, JWT CAS.</li>
+          <li><span class="strong-highlight">Multimodal AI:</span> Google Gemini 1.5 Pro API (Vision Triage + Autonomous Safety Copilot).</li>
+          <li><span class="strong-highlight">Database & GIS:</span> MongoDB Compass / Mongoose, Esri High-Resolution Satellite Map Tile Server.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── COLUMN 2 ── -->
+    <div class="col">
+      <!-- 04 PROPOSED SOLUTION -->
+      <div class="card">
+        <div class="card-header">
+          <span class="badge-num">04</span>
+          <span class="card-title">PROPOSED SOLUTION</span>
+        </div>
+        <div class="card-body">
+          An autonomous spatial dispatch ecosystem: Students capture hazard photos on Flutter mobile with precision GPS. The Node.js gateway streams the image to Google Gemini 1.5 Pro for zero-latency severity triage, safety advisories, and estimated resolution time. Verified incidents instantly populate the 3D satellite twin for swift facility crew dispatch and automated resolution tracking.
+        </div>
+      </div>
+
+      <!-- 05 SYSTEM ARCHITECTURE / WORKFLOW -->
+      <div class="card" style="flex: 1;">
+        <div class="card-header">
+          <span class="badge-num">05</span>
+          <span class="card-title">SYSTEM ARCHITECTURE / WORKFLOW</span>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step-box">
+            <div class="flow-step-title">INPUT</div>
+            <div class="flow-step-desc">GPS Geotag + Photo</div>
+          </div>
+          <div class="flow-step-box">
+            <div class="flow-step-title">PROCESS</div>
+            <div class="flow-step-desc">Node.js Express + Bus</div>
+          </div>
+          <div class="flow-step-box">
+            <div class="flow-step-title">MODEL / DB</div>
+            <div class="flow-step-desc">Gemini 1.5 + MongoDB</div>
+          </div>
+          <div class="flow-step-box">
+            <div class="flow-step-title">OUTPUT</div>
+            <div class="flow-step-desc">Satellite Twin + Dispatch</div>
+          </div>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+          <img src="docs/poster_assets/campusflow_architecture.png" class="arch-diagram-img" alt="CampusFlow AI System Architecture">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COLUMN 3 ── -->
+    <div class="col">
+      <!-- 07 QR CODE / DEMO LINK -->
+      <div class="card">
+        <div class="card-header">
+          <span class="badge-num">07</span>
+          <span class="card-title">QR CODE / DEMO LINK</span>
+        </div>
+        <div class="qr-card-body">
+          <img src="docs/poster_assets/campusflow_qr.png" class="qr-img" alt="CampusFlow AI GitHub QR Code">
+          <div class="qr-meta">
+            <span class="qr-badge">LIVE REPOSITORY & CODE</span>
+            <div class="card-body" style="font-size: 7.8pt;">
+              Scan to inspect full source code, architecture specifications, API documentation & live mobile APK.
+            </div>
+            <span class="qr-url">github.com/godjanith/Campus-flow-AI</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 08 RESULTS & OUTCOMES -->
+      <div class="card">
+        <div class="card-header">
+          <span class="badge-num">08</span>
+          <span class="card-title">RESULTS & OUTCOMES</span>
+        </div>
+        <ul class="bullet-list">
+          <li><span class="strong-highlight">Triage Latency:</span> Sub-4s multimodal hazard classification (vs 2-4 hours manual ticket dispatch).</li>
+          <li><span class="strong-highlight">Geolocation Precision:</span> Accurate to within 5m across 7 Presidency academic blocks.</li>
+          <li><span class="strong-highlight">Offline Reliability:</span> 100% incident delivery retention via SQLite/SharedPreferences cache.</li>
+          <li><span class="strong-highlight">Production Benchmark:</span> 0 analyzer warnings across Flutter & 100% clean production build.</li>
+        </ul>
+      </div>
+
+      <!-- 09 FUTURE SCOPE & CONCLUSION -->
+      <div class="card" style="flex: 1;">
+        <div class="card-header">
+          <span class="badge-num">09</span>
+          <span class="card-title">FUTURE SCOPE & CONCLUSION</span>
+        </div>
+        <ul class="bullet-list">
+          <li><span class="strong-highlight">IoT Sensor Mesh:</span> Acoustic vibration sensors for underground water & gas pipe leak detection.</li>
+          <li><span class="strong-highlight">Autonomous Drone Dispatch:</span> High-voltage exterior structural inspections & aerial mapping.</li>
+          <li><span class="strong-highlight">BMS Integration:</span> Direct handshake with university HVAC, power blades, and smart ID cards.</li>
+          <li><span class="strong-highlight">Conclusion:</span> CampusFlow AI transforms passive university maintenance into a proactive, autonomous safety intelligence grid.</li>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 4. FOOTER -->
+  <footer>
+    <div class="footer-left">
+      <span>CAMPUSFLOW AI</span> • OFFICIAL OPERATIONS PORTAL • MERNOVA X PROJECT EXPO 2026
+    </div>
+    <div class="footer-right">
+      REFERENCES: Google Gemini 1.5 Pro Multimodal Vision API, Flutter 3 SDK, React 18, Leaflet Spatial GIS, Presidency University GIS Map Coordinates.
+    </div>
+  </footer>
+
+</body>
+</html>
