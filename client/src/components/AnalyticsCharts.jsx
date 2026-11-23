@@ -25,7 +25,7 @@ export default function AnalyticsCharts({ tickets }) {
         {
           label: 'Active Incidents',
           data: labels.length ? Object.values(counts) : [0],
-          backgroundColor: '#4F46E5',
+          backgroundColor: '#0F294A',
           borderRadius: 8,
           barThickness: 22,
         },
@@ -41,7 +41,7 @@ export default function AnalyticsCharts({ tickets }) {
       datasets: [
         {
           data: counts,
-          backgroundColor: ['#DC2626', '#EA580C', '#2563EB', '#10B981'],
+          backgroundColor: ['#DC2626', '#EA580C', '#0F294A', '#10B981'],
           borderWidth: 2,
           borderColor: '#FFFFFF',
         },
@@ -57,7 +57,7 @@ export default function AnalyticsCharts({ tickets }) {
             <h3 className="text-sm font-bold text-slate-900">Infrastructure Domain Load</h3>
             <p className="text-xs text-slate-500">Live classification distribution across campus</p>
           </div>
-          <span className="rounded-md bg-indigo-50 px-2 py-1 font-mono text-[11px] font-semibold text-indigo-700">
+          <span className="rounded-md bg-amber-50 px-2 py-1 font-mono text-[11px] font-bold text-[#0F294A] border border-amber-200">
             AI TRIAGED
           </span>
         </div>

@@ -146,7 +146,7 @@ export default function SimulateReportModal({ isOpen, onClose }) {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
+              className="rounded-xl bg-[#0F294A] px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#0A1C33] border border-[#C59B27]/40 disabled:opacity-50 transition"
             >
               {submitting ? 'Running AI Triage...' : 'Dispatch Live Ticket'}
             </button>

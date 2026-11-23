@@ -52,7 +52,7 @@ export default function CampusMap({ tickets, apiBaseUrl, onStatusChange }) {
           onClick={() => setMapMode('SATELLITE')}
           className={`rounded-lg px-2.5 py-1 transition ${
             mapMode === 'SATELLITE'
-              ? 'bg-indigo-600 text-white shadow-sm'
+              ? 'bg-[#0F294A] text-white shadow-sm'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
@@ -63,7 +63,7 @@ export default function CampusMap({ tickets, apiBaseUrl, onStatusChange }) {
           onClick={() => setMapMode('STREET')}
           className={`rounded-lg px-2.5 py-1 transition ${
             mapMode === 'STREET'
-              ? 'bg-indigo-600 text-white shadow-sm'
+              ? 'bg-[#0F294A] text-white shadow-sm'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >

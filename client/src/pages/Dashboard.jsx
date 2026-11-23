@@ -188,34 +188,34 @@ export default function Dashboard({ user, onLogout }) {
       )}
 
       {/* Top Glass Navigation Bar */}
-      <header className="sticky top-0 z-[500] border-b border-slate-200/90 bg-white/90 backdrop-blur-md">
+      <header className="sticky top-0 z-[500] border-b-2 border-b-[#C59B27] bg-[#0F294A] text-white shadow-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-[#C59B27] shadow-sm border border-[#C59B27]/40">
               <BoltIcon className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-extrabold tracking-tight text-slate-900">
-                  CampusFlow <span className="text-indigo-600">AI</span>
+                <h1 className="text-lg font-black tracking-tight text-white">
+                  CampusFlow <span className="text-[#C59B27]">AI</span>
                 </h1>
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold ${
                     socketConnected
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-red-50 text-red-700 border border-red-200'
+                      ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/40'
+                      : 'bg-red-950/80 text-red-400 border border-red-500/40'
                   }`}
                 >
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
-                      socketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
+                      socketConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'
                     }`}
                   ></span>
                   {socketConnected ? 'SOCKET LIVE' : 'OFFLINE'}
                 </span>
               </div>
-              <p className="text-xs font-medium text-slate-500">
-                Presidency University • Real-Time Infrastructure Command
+              <p className="text-xs font-semibold text-[#C59B27]/90">
+                Presidency University • Official Infrastructure Command Portal
               </p>
             </div>
           </div>
@@ -243,9 +243,9 @@ export default function Dashboard({ user, onLogout }) {
 
             <button
               onClick={() => setIsSimModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#C59B27]/50 bg-white/10 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/20 transition"
             >
-              <PlusCircleIcon className="h-4 w-4" /> Inject Incident
+              <PlusCircleIcon className="h-4 w-4 text-[#C59B27]" /> Inject Incident
             </button>
 
             <button
@@ -284,7 +284,7 @@ export default function Dashboard({ user, onLogout }) {
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Total Logged
               </span>
-              <CpuChipIcon className="h-5 w-5 text-indigo-600" />
+              <CpuChipIcon className="h-5 w-5 text-[#0F294A]" />
             </div>
             <p className="mt-2 text-3xl font-extrabold text-slate-900">{stats.total}</p>
             <p className="mt-1 text-xs font-medium text-slate-500">Synced with MongoDB Compass</p>
@@ -347,7 +347,7 @@ export default function Dashboard({ user, onLogout }) {
               <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700">
                 AI Telemetry & SLA Breakdown
               </h2>
-              <span className="font-mono text-xs text-indigo-600 font-semibold">
+              <span className="font-mono text-xs text-[#0F294A] font-bold">
                 {simRunning ? 'STREAMING LIVE' : 'STANDBY'}
               </span>
             </div>
@@ -407,11 +407,11 @@ export default function Dashboard({ user, onLogout }) {
               {filteredTickets.map((ticket) => (
                 <div
                   key={ticket._id}
-                  className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-slate-50/40 p-4 hover:border-indigo-300 hover:bg-white transition shadow-sm"
+                  className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-4 hover:border-[#C59B27] hover:shadow-md transition shadow-xs"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-xs font-bold text-indigo-600">
+                      <span className="font-mono text-xs font-black text-[#0F294A] bg-slate-100 px-2 py-0.5 rounded-md">
                         {ticket.ticketCode}
                       </span>
                       <div className="flex items-center gap-1.5">
@@ -455,8 +455,8 @@ export default function Dashboard({ user, onLogout }) {
                       />
                     )}
 
-                    <div className="mt-3 rounded-xl border border-indigo-100 bg-white p-2.5 text-xs text-slate-700">
-                      <p className="font-semibold text-indigo-950">{ticket.aiSummary}</p>
+                    <div className="mt-3 rounded-xl border border-[#C59B27]/30 bg-amber-50/30 p-2.5 text-xs text-slate-700">
+                      <p className="font-bold text-[#0F294A]">{ticket.aiSummary}</p>
                       <p className="mt-1 text-[11px] text-slate-500">
                         <strong className="text-slate-700">Safety Protocol:</strong>{' '}
                         {ticket.safetyAdvisory}
