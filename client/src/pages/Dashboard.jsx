@@ -19,11 +19,13 @@ import AnalyticsCharts from '../components/AnalyticsCharts';
 import SimulateReportModal from '../components/SimulateReportModal';
 
 export default function Dashboard({ user, onLogout }) {
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'FACULTY_COORDINATOR';
   const [tickets, setTickets] = useState([]);
   const [simRunning, setSimRunning] = useState(false);
   const [socketConnected, setSocketConnected] = useState(socket.connected);
   const [filterSeverity, setFilterSeverity] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
+  const [filterScope, setFilterScope] = useState('ALL');
   const [seeding, setSeeding] = useState(false);
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
   const [liveToast, setLiveToast] = useState(null);
@@ -188,9 +190,19 @@ export default function Dashboard({ user, onLogout }) {
     return tickets.filter((t) => {
       const matchSev = filterSeverity === 'ALL' || t.severity === filterSeverity;
       const matchStat = filterStatus === 'ALL' || t.status === filterStatus;
-      return matchSev && matchStat;
+      let matchScope = true;
+      if (filterScope === 'MY') {
+        const userReg = (user?.regNo || '').toLowerCase().trim();
+        const userName = (user?.name || '').toLowerCase().trim();
+        const repReg = (t.reportedBy?.regNo || '').toLowerCase().trim();
+        const repName = (t.reportedBy?.name || '').toLowerCase().trim();
+        matchScope = (userReg && repReg === userReg) ||
+                     (userName && repName.includes(userName)) ||
+                     (repName && userName.includes(repName));
+      }
+      return matchSev && matchStat && matchScope;
     });
-  }, [tickets, filterSeverity, filterStatus]);
+  }, [tickets, filterSeverity, filterStatus, filterScope, user]);
 
   const stats = useMemo(() => {
     return {
@@ -244,58 +256,78 @@ export default function Dashboard({ user, onLogout }) {
                   ></span>
                   {socketConnected ? 'SOCKET LIVE' : 'OFFLINE'}
                 </span>
+                <span className={`rounded-full px-2 py-0.5 font-mono text-[9px] font-bold ${
+                  isAdmin
+                    ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
+                    : 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/40'
+                }`}>
+                  {isAdmin ? 'ADMIN COMMAND' : `STUDENT • ${user?.regNo || 'VERIFIED'}`}
+                </span>
               </div>
               <p className="text-xs font-semibold text-[#C59B27]/90">
-                Presidency University • Official Infrastructure Command Portal
+                {isAdmin
+                  ? 'Presidency University • Official Infrastructure Command Portal'
+                  : 'Presidency University • Student Incident & Safety Portal'}
               </p>
             </div>
           </div>
 
-          {/* Judge Demo & Real-Time Simulation Controls */}
+          {/* Role-Based Controls (Admin vs Student) */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <button
-              onClick={handleToggleSimulation}
-              className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-bold transition shadow-sm sm:gap-1.5 sm:px-3.5 sm:text-xs ${
-                simRunning
-                  ? 'bg-rose-600 text-white hover:bg-rose-700'
-                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
-              }`}
-            >
-              {simRunning ? (
-                <>
-                  <StopIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Stop</span> Auto-Sim
-                </>
-              ) : (
-                <>
-                  <PlayIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Live</span> Auto-Sim
-                </>
-              )}
-            </button>
+            {isAdmin ? (
+              <>
+                <button
+                  onClick={handleToggleSimulation}
+                  className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-bold transition shadow-sm sm:gap-1.5 sm:px-3.5 sm:text-xs ${
+                    simRunning
+                      ? 'bg-rose-600 text-white hover:bg-rose-700'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  }`}
+                >
+                  {simRunning ? (
+                    <>
+                      <StopIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Stop</span> Auto-Sim
+                    </>
+                  ) : (
+                    <>
+                      <PlayIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Live</span> Auto-Sim
+                    </>
+                  )}
+                </button>
 
-            <button
-              onClick={() => setIsSimModalOpen(true)}
-              className="inline-flex items-center gap-1 rounded-xl border border-[#C59B27]/50 bg-white/10 px-2.5 py-2 text-[11px] font-bold text-white hover:bg-white/20 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
-            >
-              <PlusCircleIcon className="h-3.5 w-3.5 text-[#C59B27] sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Inject</span> Incident
-            </button>
+                <button
+                  onClick={() => setIsSimModalOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-xl border border-[#C59B27]/50 bg-white/10 px-2.5 py-2 text-[11px] font-bold text-white hover:bg-white/20 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
+                >
+                  <PlusCircleIcon className="h-3.5 w-3.5 text-[#C59B27] sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Inject</span> Incident
+                </button>
 
-            <button
-              onClick={handleSeedDemo}
-              disabled={seeding}
-              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
-            >
-              <SparklesIcon className="h-3.5 w-3.5 text-amber-500 sm:h-4 sm:w-4" />
-              {seeding ? 'Seeding...' : 'Seed Demo'}
-            </button>
+                <button
+                  onClick={handleSeedDemo}
+                  disabled={seeding}
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
+                >
+                  <SparklesIcon className="h-3.5 w-3.5 text-amber-500 sm:h-4 sm:w-4" />
+                  {seeding ? 'Seeding...' : 'Seed Demo'}
+                </button>
 
-            <button
-              onClick={handlePurgeAll}
-              title="Empty all complaints and clear campus grid"
-              className="inline-flex items-center gap-1 rounded-xl border border-rose-300 bg-rose-50 px-2.5 py-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs sm:gap-1.5 sm:px-3.5 sm:text-xs"
-            >
-              <TrashIcon className="h-3.5 w-3.5 text-rose-600 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Empty</span> Purge
-            </button>
+                <button
+                  onClick={handlePurgeAll}
+                  title="Empty all complaints and clear campus grid"
+                  className="inline-flex items-center gap-1 rounded-xl border border-rose-300 bg-rose-50 px-2.5 py-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs sm:gap-1.5 sm:px-3.5 sm:text-xs"
+                >
+                  <TrashIcon className="h-3.5 w-3.5 text-rose-600 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Empty</span> Purge
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setIsSimModalOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#C59B27] px-3.5 py-2 text-xs font-bold text-slate-900 hover:bg-amber-400 transition shadow-sm"
+              >
+                <PlusCircleIcon className="h-4 w-4" /> Report New Incident
+              </button>
+            )}
 
             <button
               onClick={handleExportCSV}
@@ -380,6 +412,7 @@ export default function Dashboard({ user, onLogout }) {
               tickets={filteredTickets}
               apiBaseUrl={API_BASE_URL}
               onStatusChange={handleStatusChange}
+              isAdmin={isAdmin}
             />
           </div>
 
@@ -409,6 +442,31 @@ export default function Dashboard({ user, onLogout }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <div className="flex rounded-xl bg-slate-100 p-0.5 border border-slate-200 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setFilterScope('ALL')}
+                  className={`rounded-lg px-2.5 py-1 transition ${
+                    filterScope === 'ALL'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  All Incidents
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterScope('MY')}
+                  className={`rounded-lg px-2.5 py-1 transition ${
+                    filterScope === 'MY'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  My Submissions
+                </button>
+              </div>
+
               <select
                 value={filterSeverity}
                 onChange={(e) => setFilterSeverity(e.target.value)}
@@ -509,24 +567,30 @@ export default function Dashboard({ user, onLogout }) {
                     <span className="font-mono text-[11px] text-slate-500">
                       ETA: {ticket.estimatedResolutionTime}
                     </span>
-                    <div className="flex items-center gap-1.5">
-                      {ticket.status === 'OPEN' && (
-                        <button
-                          onClick={() => handleStatusChange(ticket._id, 'IN_PROGRESS')}
-                          className="rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-bold text-white hover:bg-amber-600 transition"
-                        >
-                          Dispatch
-                        </button>
-                      )}
-                      {ticket.status !== 'RESOLVED' && (
-                        <button
-                          onClick={() => handleStatusChange(ticket._id, 'RESOLVED')}
-                          className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-emerald-700 transition"
-                        >
-                          Resolve
-                        </button>
-                      )}
-                    </div>
+                    {isAdmin ? (
+                      <div className="flex items-center gap-1.5">
+                        {ticket.status === 'OPEN' && (
+                          <button
+                            onClick={() => handleStatusChange(ticket._id, 'IN_PROGRESS')}
+                            className="rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-bold text-white hover:bg-amber-600 transition cursor-pointer"
+                          >
+                            Dispatch
+                          </button>
+                        )}
+                        {ticket.status !== 'RESOLVED' && (
+                          <button
+                            onClick={() => handleStatusChange(ticket._id, 'RESOLVED')}
+                            className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer"
+                          >
+                            Resolve
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+                        {ticket.status}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}

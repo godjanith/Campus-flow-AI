@@ -35,7 +35,7 @@ const createBeaconIcon = (severity, status) => {
   });
 };
 
-export default function CampusMap({ tickets, apiBaseUrl, onStatusChange }) {
+export default function CampusMap({ tickets, apiBaseUrl, onStatusChange, isAdmin = false }) {
   const [mapMode, setMapMode] = useState('SATELLITE'); // Default to High-Res Satellite View
 
   const activeTickets = useMemo(
@@ -181,26 +181,37 @@ export default function CampusMap({ tickets, apiBaseUrl, onStatusChange }) {
                   {ticket.aiSummary}
                 </p>
 
-                <div className="mt-2.5 flex items-center gap-1.5">
-                  {ticket.status !== 'IN_PROGRESS' && ticket.status !== 'RESOLVED' && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onStatusChange(ticket._id, 'IN_PROGRESS'); }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      className="flex-1 rounded-lg bg-amber-500 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition cursor-pointer"
-                    >
-                      Dispatch Crew
-                    </button>
-                  )}
-                  {ticket.status !== 'RESOLVED' && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onStatusChange(ticket._id, 'RESOLVED'); }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      className="flex-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition cursor-pointer"
-                    >
-                      Mark Resolved
-                    </button>
-                  )}
-                </div>
+                {isAdmin ? (
+                  <div className="mt-2.5 flex items-center gap-1.5">
+                    {ticket.status !== 'IN_PROGRESS' && ticket.status !== 'RESOLVED' && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onStatusChange(ticket._id, 'IN_PROGRESS'); }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="flex-1 rounded-lg bg-amber-500 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition cursor-pointer"
+                      >
+                        Dispatch Crew
+                      </button>
+                    )}
+                    {ticket.status !== 'RESOLVED' && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onStatusChange(ticket._id, 'RESOLVED'); }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="flex-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition cursor-pointer"
+                      >
+                        Mark Resolved
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-2.5 flex items-center justify-between text-xs text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
+                    <span className="font-semibold">
+                      Status: <strong className={ticket.status === 'RESOLVED' ? 'text-emerald-700' : 'text-amber-700'}>{ticket.status}</strong>
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-500">
+                      ETA: {ticket.estimatedResolutionTime}
+                    </span>
+                  </div>
+                )}
               </div>
             </Popup>
           </Marker>

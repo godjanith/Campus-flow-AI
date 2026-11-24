@@ -417,17 +417,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.cardBorder),
-                ),
-                child: Text(
-                  'Role: ${user?['role'] as String? ?? 'CAMPUS_MEMBER'} • Presidency Operations Node',
-                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryRoyalNavy),
-                ),
+              Builder(
+                builder: (context) {
+                  final role = (user?['role'] as String? ?? 'STUDENT').toUpperCase();
+                  final isAdmin = role == 'ADMIN' || role == 'FACULTY_COORDINATOR';
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isAdmin ? AppTheme.secondaryRoyalGold.withValues(alpha: 0.15) : AppTheme.surfaceLight,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isAdmin ? AppTheme.secondaryRoyalGold : AppTheme.cardBorder,
+                      ),
+                    ),
+                    child: Text(
+                      isAdmin
+                          ? 'Role: FACILITY COMMANDER • Administrative Access'
+                          : 'Role: STUDENT • Reg: ${user?['regNo'] ?? 'PU-STUDENT'}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryRoyalNavy,
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -532,7 +546,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         Text(
-                          'Presidency University Operations Portal',
+                          ((user?['role'] as String? ?? 'STUDENT').toUpperCase() == 'ADMIN' ||
+                                  (user?['role'] as String? ?? 'STUDENT').toUpperCase() == 'FACULTY_COORDINATOR')
+                              ? 'Presidency University Facility Command'
+                              : 'Presidency University Student Portal',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(

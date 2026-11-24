@@ -744,81 +744,149 @@ class _TicketDetailSheet extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // Operations Actions Bar
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.cardBorder),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Dispatch Operations Actions:',
-                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary),
+              // Role-Based Actions & Status Card
+              Builder(
+                builder: (context) {
+                  final user = provider.user;
+                  final role = (user?['role'] as String? ?? 'STUDENT').toUpperCase();
+                  final isAdmin = role == 'ADMIN' || role == 'FACULTY_COORDINATOR';
+
+                  if (isAdmin) {
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.cardBorder),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Dispatch Operations (Admin Command):',
+                                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.secondaryRoyalGold.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'COMMAND ACCESS',
+                                  style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w700, color: AppTheme.primaryRoyalNavy),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              if (ticket.status != 'IN_PROGRESS' && ticket.status != 'RESOLVED')
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      HapticFeedback.mediumImpact();
+                                      provider.updateTicketStatus(ticket.id, 'IN_PROGRESS', note: 'Technician dispatched to location.');
+                                      Navigator.pop(context);
+                                    },
+                                    icon: const Icon(Icons.run_circle_outlined, size: 16),
+                                    label: Text('Dispatch Crew', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primaryRoyalNavy,
+                                      foregroundColor: AppTheme.purePorcelain,
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                    ),
+                                  ),
+                                ),
+                              if (ticket.status == 'IN_PROGRESS') ...[
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      HapticFeedback.mediumImpact();
+                                      provider.updateTicketStatus(ticket.id, 'RESOLVED', note: 'Repairs completed and safety verified.');
+                                      Navigator.pop(context);
+                                    },
+                                    icon: const Icon(Icons.check_circle_rounded, size: 16),
+                                    label: Text('Mark Resolved', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.lowText,
+                                      foregroundColor: AppTheme.purePorcelain,
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (ticket.status == 'RESOLVED') ...[
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      HapticFeedback.mediumImpact();
+                                      provider.updateTicketStatus(ticket.id, 'OPEN', note: 'Ticket reopened for follow-up inspection.');
+                                      Navigator.pop(context);
+                                    },
+                                    icon: const Icon(Icons.replay_rounded, size: 16),
+                                    label: Text('Reopen Ticket', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppTheme.primaryRoyalNavy,
+                                      side: const BorderSide(color: AppTheme.primaryRoyalNavy),
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // Student Status Tracking Card (No Admin Action Buttons)
+                  return Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.cardBorder),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (ticket.status != 'IN_PROGRESS' && ticket.status != 'RESOLVED')
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                HapticFeedback.mediumImpact();
-                                provider.updateTicketStatus(ticket.id, 'IN_PROGRESS', note: 'Technician dispatched to location.');
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(Icons.run_circle_outlined, size: 16),
-                              label: Text('Dispatch Crew', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryRoyalNavy,
-                                foregroundColor: AppTheme.purePorcelain,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                              ),
+                        Row(
+                          children: [
+                            Icon(
+                              ticket.status == 'RESOLVED'
+                                  ? Icons.verified_rounded
+                                  : (ticket.status == 'IN_PROGRESS' ? Icons.engineering_rounded : Icons.hourglass_top_rounded),
+                              size: 16,
+                              color: ticket.status == 'RESOLVED' ? AppTheme.lowText : AppTheme.highText,
                             ),
-                          ),
-                        if (ticket.status == 'IN_PROGRESS') ...[
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                HapticFeedback.mediumImpact();
-                                provider.updateTicketStatus(ticket.id, 'RESOLVED', note: 'Repairs completed and safety verified.');
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(Icons.check_circle_rounded, size: 16),
-                              label: Text('Mark Resolved', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.lowText,
-                                foregroundColor: AppTheme.purePorcelain,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                              ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Incident Lifecycle Tracker:',
+                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                             ),
-                          ),
-                        ],
-                        if (ticket.status == 'RESOLVED') ...[
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                HapticFeedback.mediumImpact();
-                                provider.updateTicketStatus(ticket.id, 'OPEN', note: 'Ticket reopened for follow-up inspection.');
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(Icons.replay_rounded, size: 16),
-                              label: Text('Reopen Ticket', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppTheme.primaryRoyalNavy,
-                                side: const BorderSide(color: AppTheme.primaryRoyalNavy),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                              ),
-                            ),
-                          ),
-                        ],
+                            const Spacer(),
+                            _StatusBadge(status: ticket.status),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          ticket.status == 'RESOLVED'
+                              ? 'This hazard has been resolved and safety closure verified by the campus facility engineering unit.'
+                              : (ticket.status == 'IN_PROGRESS'
+                                  ? 'A field technician has been dispatched and is currently resolving this issue on site.'
+                                  : 'Your report has been analyzed by AI and prioritized in the university facility dispatch queue.'),
+                          style: GoogleFonts.inter(fontSize: 11.5, color: AppTheme.textSecondary, height: 1.4),
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 14),
 
