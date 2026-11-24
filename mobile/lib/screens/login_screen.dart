@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../config/app_config.dart';
 import '../config/theme.dart';
 import '../providers/app_provider.dart';
 import '../services/api_service.dart';
