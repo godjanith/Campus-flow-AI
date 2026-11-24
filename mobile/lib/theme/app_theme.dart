@@ -31,6 +31,7 @@ class AppTheme {
 
   // Status & Severity Colors (Soft pastel fills with rich royal/semantic text)
   static const Color criticalBg = Color(0xFFFEF2F2);
+  static const Color criticalBorder = Color(0xFFFECACA);
   static const Color criticalText = Color(0xFF991B1B);
   static const Color critical = Color(0xFF991B1B);
 
