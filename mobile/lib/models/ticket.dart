@@ -73,6 +73,32 @@ class Ticket {
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'ticketCode': ticketCode,
+      'title': title,
+      'description': description,
+      'building': building,
+      'location': {'lat': lat, 'lng': lng},
+      'imageUrl': imageUrl,
+      'category': category,
+      'severity': severity,
+      'aiSummary': aiSummary,
+      'estimatedResolutionTime': estimatedResolutionTime,
+      'safetyAdvisory': safetyAdvisory,
+      'triageEngineUsed': triageEngineUsed,
+      'status': status,
+      'reportedBy': {
+        'name': reporterName,
+        'regNo': reporterRegNo,
+      },
+      'timeline': timeline.map((e) => e.toJson()).toList(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 }
 
 class TimelineEntry {
@@ -92,5 +118,13 @@ class TimelineEntry {
       note: json['note'] as String? ?? '',
       timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'note': note,
+      'timestamp': timestamp.toIso8601String(),
+    };
   }
 }

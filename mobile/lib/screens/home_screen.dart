@@ -313,12 +313,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? null
                           : () async {
                               Navigator.pop(ctx);
-                              await provider.syncOfflineQueueNow();
+                              final success = await provider.syncOfflineQueueNow();
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Offline reports successfully synced with CampusFlow Server!'),
-                                    backgroundColor: AppTheme.lowText,
+                                  SnackBar(
+                                    content: Text(
+                                      success
+                                          ? 'All pending reports successfully synced with CampusFlow Server!'
+                                          : 'Server is currently offline. Reports remain safely saved in local ledger and visible in Tickets.',
+                                    ),
+                                    backgroundColor: success ? AppTheme.lowText : AppTheme.highText,
+                                    behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                               }

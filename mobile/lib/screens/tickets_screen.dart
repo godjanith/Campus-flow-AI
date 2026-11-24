@@ -36,15 +36,17 @@ class _TicketsScreenState extends State<TicketsScreen> {
     final currentName = (currentUser?['name'] as String? ?? '').toLowerCase();
 
     // 1. Filter by Scope ("ALL" vs "MY")
-    final scopedTickets = _scope == 'MY'
-        ? allTickets.where((t) {
-            final tReg = t.reporterRegNo.toLowerCase();
-            final tName = t.reporterName.toLowerCase();
-            if (currentRegNo.isNotEmpty && tReg == currentRegNo) return true;
-            if (currentName.isNotEmpty && (tName.contains(currentName) || currentName.contains(tName))) return true;
-            return false;
-          }).toList()
-        : allTickets;
+    final myTickets = allTickets.where((t) {
+      final tReg = t.reporterRegNo.toLowerCase().trim();
+      final tName = t.reporterName.toLowerCase().trim();
+      if (currentRegNo.isNotEmpty && (tReg == currentRegNo || tReg.contains(currentRegNo) || currentRegNo.contains(tReg))) return true;
+      if (currentName.isNotEmpty && (tName == currentName || tName.contains(currentName) || currentName.contains(tName))) return true;
+      // Also include locally issued or offline tickets created on this device
+      if (t.id.startsWith('local_') || t.id.startsWith('offline_')) return true;
+      return false;
+    }).toList();
+
+    final scopedTickets = _scope == 'MY' ? myTickets : allTickets;
 
     // 2. Filter by Search Query & Severity Pill
     final filteredTickets = scopedTickets.where((t) {
@@ -142,7 +144,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            'My Reports',
+                            'My Reports (${myTickets.length})',
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: _scope == 'MY' ? FontWeight.w700 : FontWeight.w500,
@@ -357,6 +359,25 @@ class _TicketCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+                    if (ticket.id.startsWith('local_') || ticket.id.startsWith('offline_')) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppTheme.highBg,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: AppTheme.highText.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          'PENDING SYNC',
+                          style: GoogleFonts.inter(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.highText,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
                     _SeverityBadge(severity: ticket.severity),
                     const SizedBox(width: 6),
                     _StatusBadge(status: ticket.status),

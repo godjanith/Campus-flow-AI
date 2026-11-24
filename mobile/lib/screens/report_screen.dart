@@ -221,22 +221,37 @@ class _ReportScreenState extends State<ReportScreen> {
         } catch (_) {
           ticket = _generateLocalTriagedTicket(title, desc, building, reporterName, reporterRegNo);
           await OfflineQueue.enqueue({
+            'ticketCode': ticket.ticketCode,
             'title': title,
             'description': desc,
             'building': building,
+            'category': _selectedCategory,
+            'severity': ticket.severity,
+            'lat': _currentLat,
+            'lng': _currentLng,
+            'reporterName': reporterName,
+            'reporterRegNo': reporterRegNo,
           });
         }
       } else {
         ticket = _generateLocalTriagedTicket(title, desc, building, reporterName, reporterRegNo);
         await OfflineQueue.enqueue({
+          'ticketCode': ticket.ticketCode,
           'title': title,
           'description': desc,
           'building': building,
+          'category': _selectedCategory,
+          'severity': ticket.severity,
+          'lat': _currentLat,
+          'lng': _currentLng,
+          'reporterName': reporterName,
+          'reporterRegNo': reporterRegNo,
         });
       }
 
       if (mounted) {
         _clearForm();
+        await provider.addTicket(ticket);
         await provider.loadTickets();
         if (mounted) _showTriageResult(ticket);
       }
