@@ -443,7 +443,87 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () {
+                  final hostCtrl = TextEditingController(text: AppConfig.serverHost);
+                  showDialog(
+                    context: context,
+                    builder: (dCtx) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: Text(
+                        'Backend Server Connection',
+                        style: GoogleFonts.merriweather(fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Enter your host computer IP & port (e.g. 172.17.83.174:5000) or localhost:5000 if using USB adb reverse:',
+                            style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: hostCtrl,
+                            decoration: const InputDecoration(
+                              hintText: 'e.g. 172.17.83.174:5000',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dCtx),
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            AppConfig.setServerHost(hostCtrl.text);
+                            Navigator.pop(dCtx);
+                            Navigator.pop(ctx);
+                            context.read<AppProvider>().loadTickets();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Target server updated: http://${AppConfig.serverHost}/api'),
+                                backgroundColor: AppTheme.lowText,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRoyalNavy),
+                          child: const Text('Save & Reconnect', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.dns_outlined, size: 16, color: AppTheme.primaryRoyalNavy),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Host: ${AppConfig.serverHost}',
+                            style: GoogleFonts.robotoMono(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryRoyalNavy),
+                          ),
+                        ],
+                      ),
+                      const Icon(Icons.edit_outlined, size: 14, color: AppTheme.textSecondary),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(

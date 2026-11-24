@@ -719,6 +719,69 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontSize: 10,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () {
+                          final hostCtrl = TextEditingController(text: AppConfig.serverHost);
+                          showDialog(
+                            context: context,
+                            builder: (dCtx) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              title: Text(
+                                'Target Server Connection',
+                                style: GoogleFonts.merriweather(fontSize: 16, fontWeight: FontWeight.w700),
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Enter your host computer IP:port (e.g. 172.17.83.174:5000):',
+                                    style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  TextField(
+                                    controller: hostCtrl,
+                                    decoration: const InputDecoration(
+                                      hintText: '172.17.83.174:5000',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(dCtx),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() => AppConfig.setServerHost(hostCtrl.text));
+                                    Navigator.pop(dCtx);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Target server: http://${AppConfig.serverHost}/api'),
+                                        backgroundColor: AppTheme.lowText,
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRoyalNavy),
+                                  child: const Text('Save', style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Target Server Node: ${AppConfig.serverHost}',
+                          style: GoogleFonts.robotoMono(
+                            color: AppTheme.primaryRoyalNavy.withValues(alpha: 0.75),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
