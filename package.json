@@ -1,0 +1,12 @@
+{
+  "name": "campusflow-ai-root",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "build": "npm run build --prefix client",
+    "server": "npm start --prefix server",
+    "client": "npm run dev --prefix client"
+  }
+}

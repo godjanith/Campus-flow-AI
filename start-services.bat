@@ -32,7 +32,13 @@ if "%ERRORLEVEL%"=="0" (
     echo [!] No active ADB device or adb not in PATH. Phone can connect over Wi-Fi (172.17.83.174:5000).
 )
 
-:: 4. Start Core Node.js Express + Socket.IO Server
+:: 4. Free port 5000 if an older server instance is running
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :5000 ^| findstr LISTENING 2^>NUL') do (
+    echo [*] Terminating stale background server on port 5000 (PID: %%a)...
+    taskkill /F /PID %%a >NUL 2>&1
+)
+
+:: 5. Start Core Node.js Express + Socket.IO Server
 echo [*] Starting CampusFlow Core Server on port 5000...
 echo [✓] Hosting Web Dashboard at: http://localhost:5000
 echo [✓] Hosting LAN Dashboard at: http://172.17.83.174:5000

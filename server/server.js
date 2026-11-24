@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -64,7 +65,21 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   etag: true,
 }));
 
-// ── Health Check ───────────────────────────────────────────────────
+// ── Health & Gateway Root ──────────────────────────────────────────
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    service: 'CampusFlow AI Core Gateway',
+    version: '2.0.0',
+    status: 'ONLINE',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      tickets: '/api/tickets',
+    },
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ONLINE',
@@ -77,6 +92,14 @@ app.get('/api/health', (req, res) => {
 // ── API Routes ─────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
+
+// ── 404 for Unmatched API routes (/api/*) ──────────────────────────
+app.use('/api/*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API route ${req.originalUrl} not found.`,
+  });
+});
 
 // ── Socket.io Connection Manager ───────────────────────────────────
 const connectedClients = new Set();
@@ -96,24 +119,35 @@ io.on('connection', (socket) => {
 });
 
 // ── Single Page App Catch-All for Non-API Routes ───────────────────
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-    return next();
-  }
+app.get('*', (req, res) => {
   const indexPath = path.join(clientDistPath, 'index.html');
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      res.status(200).send('CampusFlow AI Backend API is active. React web build pending.');
-    }
-  });
-});
-
-// ── 404 Catch-All for Unmatched API routes ─────────────────────────
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `API route ${req.originalUrl} not found.`,
-  });
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.status(200).send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>CampusFlow AI Core Server</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0F294A; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+          .card { background: white; color: #0F294A; border-radius: 16px; padding: 32px; max-width: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-top: 4px solid #C59B27; }
+          h1 { margin-top: 0; font-size: 22px; }
+          a { color: #0F294A; font-weight: bold; text-decoration: underline; }
+          .badge { background: #E0E7FF; color: #3730A3; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>CampusFlow <span style="color: #C59B27;">AI</span></h1>
+          <p><span class="badge">SERVER ONLINE</span></p>
+          <p>Presidency University Core Node & WebSocket Hub is operating on port 5000.</p>
+          <p><a href="/api/health">Check Health</a> &bull; <a href="/api/tickets">View Tickets API</a></p>
+        </div>
+      </body>
+    </html>
+  `);
 });
 
 // ── Global Error Handler ───────────────────────────────────────────
