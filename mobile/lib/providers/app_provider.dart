@@ -42,6 +42,13 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> _initLocalState() async {
     _tickets = await _loadLocalTickets();
+    if (_tickets.isEmpty) {
+      _tickets = defaultTwoTickets;
+      await _saveLocalTickets();
+    } else if (_tickets.length > 2 && _tickets.any((t) => t.ticketCode == 'CF-618492' || t.ticketCode == 'CF-503819')) {
+      _tickets = _tickets.take(2).toList();
+      await _saveLocalTickets();
+    }
     await _recoverPendingQueueTickets();
     notifyListeners();
 
@@ -53,6 +60,81 @@ class AppProvider extends ChangeNotifier {
     await _syncOfflineQueue();
     await loadTickets();
   }
+
+  static List<Ticket> get defaultTwoTickets => [
+        Ticket(
+          id: 'cf_demo_001',
+          ticketCode: 'CF-842910',
+          title: 'Exposed High-Voltage Conduit Sparking',
+          description:
+              'Main corridor electrical junction box near Lab 304 emitting intermittent sparks, ozone smell, and loose cabling.',
+          building: 'Engineering Block A',
+          lat: 13.1723,
+          lng: 77.5366,
+          imageUrl:
+              'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+          category: 'Electrical Safety',
+          severity: 'CRITICAL',
+          aiSummary:
+              '[CRITICAL] Active electrical arcing hazard detected at Engineering Block A junction box near Lab 304.',
+          estimatedResolutionTime: '20 mins',
+          safetyAdvisory:
+              'DANGER: Evacuate 10-meter radius immediately. Do not touch metal doorframe.',
+          triageEngineUsed: 'GEMINI_MULTIMODAL',
+          status: 'OPEN',
+          reporterName: 'Rahul R',
+          reporterRegNo: '20252MCA0301',
+          timeline: [
+            TimelineEntry(
+              status: 'OPEN',
+              note:
+                  'Incident reported by student with field photo & triaged as CRITICAL by CampusFlow AI.',
+              timestamp: DateTime.now().subtract(const Duration(minutes: 18)),
+            ),
+          ],
+          createdAt: DateTime.now().subtract(const Duration(minutes: 18)),
+          updatedAt: DateTime.now().subtract(const Duration(minutes: 18)),
+        ),
+        Ticket(
+          id: 'cf_demo_002',
+          ticketCode: 'CF-729104',
+          title: 'Chilled Water Pipe Leak Flooding Lobby',
+          description:
+              'Overhead HVAC chilled water return pipe leaking heavily onto granite tiles outside Auditorium entrance.',
+          building: 'Auditorium Complex',
+          lat: 13.1712,
+          lng: 77.5355,
+          imageUrl:
+              'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80',
+          category: 'Plumbing & Water',
+          severity: 'HIGH',
+          aiSummary:
+              '[HIGH] Overhead chilled water line rupture causing slip hazard in Auditorium main lobby.',
+          estimatedResolutionTime: '45 mins',
+          safetyAdvisory:
+              'Caution: Wet granite flooring. Use West Wing entrance until barricades are placed.',
+          triageEngineUsed: 'GEMINI_MULTIMODAL',
+          status: 'IN_PROGRESS',
+          reporterName: 'Ananya Sharma',
+          reporterRegNo: '20252MCA0142',
+          timeline: [
+            TimelineEntry(
+              status: 'OPEN',
+              note:
+                  'Ticket logged via CampusFlow Mobile with student photo evidence.',
+              timestamp: DateTime.now().subtract(const Duration(minutes: 65)),
+            ),
+            TimelineEntry(
+              status: 'IN_PROGRESS',
+              note:
+                  'Plumbing & HVAC isolation crew dispatched to Auditorium.',
+              timestamp: DateTime.now().subtract(const Duration(minutes: 25)),
+            ),
+          ],
+          createdAt: DateTime.now().subtract(const Duration(minutes: 65)),
+          updatedAt: DateTime.now().subtract(const Duration(minutes: 25)),
+        ),
+      ];
 
   Future<void> _saveLocalTickets() async {
     try {

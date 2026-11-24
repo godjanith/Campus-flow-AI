@@ -24,7 +24,15 @@ export default function Dashboard({ user, onLogout }) {
   const [tickets, setTickets] = useState(() => {
     try {
       const saved = localStorage.getItem('campusflow_cached_tickets');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Prune older 6-issue demo set down to the 2 requested by user
+        if (parsed.length > 2 && parsed.some((t) => t.ticketCode === 'CF-618492' || t.ticketCode === 'CF-503819')) {
+          localStorage.setItem('campusflow_cached_tickets', JSON.stringify(DEFAULT_CAMPUS_TICKETS));
+          return DEFAULT_CAMPUS_TICKETS;
+        }
+        return parsed;
+      }
     } catch {}
     return DEFAULT_CAMPUS_TICKETS;
   });
@@ -36,8 +44,18 @@ export default function Dashboard({ user, onLogout }) {
   const [seeding, setSeeding] = useState(false);
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
   const [isNodeModalOpen, setIsNodeModalOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   const [customNodeUrl, setCustomNodeUrl] = useState(API_BASE_URL);
   const [liveToast, setLiveToast] = useState(null);
+
+  const resolveImageUrl = (img) => {
+    if (!img) return null;
+    if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
+      return img;
+    }
+    const base = API_BASE_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    return `${base}${img.startsWith('/') ? '' : '/'}${img}`;
+  };
 
   const showToast = (msg) => {
     setLiveToast(msg);
@@ -658,11 +676,39 @@ export default function Dashboard({ user, onLogout }) {
                     </p>
 
                     {ticket.imageUrl && (
-                      <img
-                        src={`${API_BASE_URL}${ticket.imageUrl}`}
-                        alt={ticket.title}
-                        className="mt-2.5 h-32 w-full rounded-xl border border-slate-200 object-cover"
-                      />
+                      <div
+                        onClick={() =>
+                          setPreviewImage({
+                            url: resolveImageUrl(ticket.imageUrl),
+                            title: ticket.title,
+                            code: ticket.ticketCode,
+                            building: ticket.building,
+                            category: ticket.category,
+                            severity: ticket.severity,
+                            reporter: `${ticket.reportedBy?.name || 'Student'} (${ticket.reportedBy?.regNo || 'Verified'})`,
+                          })
+                        }
+                        className="group relative mt-3 cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-slate-900 shadow-sm transition hover:border-[#C59B27]"
+                      >
+                        <img
+                          src={resolveImageUrl(ticket.imageUrl)}
+                          alt={ticket.title}
+                          className="h-36 w-full object-cover transition duration-300 group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 opacity-90 transition group-hover:opacity-100" />
+                        <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-white">
+                          <span className="flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-bold backdrop-blur border border-white/20">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Student Field Photo
+                          </span>
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-[#C59B27] group-hover:underline">
+                            Inspect 🔍
+                          </span>
+                        </div>
+                      </div>
                     )}
 
                     <div className="mt-3 rounded-xl border border-[#C59B27]/30 bg-amber-50/30 p-2.5 text-xs text-slate-700">
@@ -772,6 +818,58 @@ export default function Dashboard({ user, onLogout }) {
                 className="rounded-xl bg-[#0F294A] px-4 py-2 text-xs font-bold text-white hover:bg-slate-800"
               >
                 Save & Connect Node
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full-Screen High-Resolution Student Photo Inspection Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-[1300] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-md transition"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="relative max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-3.5 bg-slate-900/90">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-[#C59B27] bg-[#C59B27]/10 px-2 py-0.5 rounded border border-[#C59B27]/30">
+                    {previewImage.code}
+                  </span>
+                  <h3 className="text-sm font-bold text-white">{previewImage.title}</h3>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  📍 {previewImage.building} &bull; Uploaded by <strong className="text-slate-200">{previewImage.reporter}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="rounded-xl bg-slate-800 p-2 text-slate-300 hover:bg-slate-700 hover:text-white transition"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex items-center justify-center bg-black/95 p-3 max-h-[68vh] overflow-hidden">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title}
+                className="max-h-[64vh] w-auto max-w-full rounded-lg object-contain shadow-2xl"
+              />
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-800 px-5 py-3 text-xs text-slate-400 bg-slate-900">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Official Student Field Evidence &bull; Facility Engineering Desk
+              </span>
+              <button
+                onClick={() => window.open(previewImage.url, '_blank')}
+                className="text-[#C59B27] hover:underline font-bold text-[11px]"
+              >
+                Open Original Resolution ↗
               </button>
             </div>
           </div>

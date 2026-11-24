@@ -170,11 +170,22 @@ export default function CampusMap({ tickets, apiBaseUrl, onStatusChange, isAdmin
                 </p>
 
                 {ticket.imageUrl && (
-                  <img
-                    src={`${apiBaseUrl}${ticket.imageUrl}`}
-                    alt="Evidence"
-                    className="mt-2 h-24 w-full rounded-lg border border-slate-200 object-cover"
-                  />
+                  <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 bg-slate-900">
+                    <img
+                      src={
+                        ticket.imageUrl.startsWith('http://') ||
+                        ticket.imageUrl.startsWith('https://') ||
+                        ticket.imageUrl.startsWith('data:')
+                          ? ticket.imageUrl
+                          : `${apiBaseUrl || ''}${ticket.imageUrl.startsWith('/') ? '' : '/'}${ticket.imageUrl}`
+                      }
+                      alt="Student Field Evidence"
+                      className="h-28 w-full object-cover hover:scale-105 transition duration-200"
+                    />
+                    <div className="bg-slate-900/90 px-2 py-0.5 text-[9px] font-bold text-amber-300 text-center">
+                      📷 Student Photo Evidence Attached
+                    </div>
+                  </div>
                 )}
 
                 <p className="mt-2 rounded-lg bg-slate-50 p-2 text-xs leading-relaxed text-slate-700 border border-slate-100">

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../config/app_config.dart';
 import '../config/theme.dart';
 import '../models/ticket.dart';
 import '../providers/app_provider.dart';
@@ -378,6 +379,32 @@ class _TicketCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                     ],
+                    if (ticket.imageUrl != null && ticket.imageUrl!.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFC59B27).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: const Color(0xFFC59B27).withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.photo_camera_rounded, size: 10, color: Color(0xFF9E7711)),
+                            const SizedBox(width: 3),
+                            Text(
+                              'PHOTO',
+                              style: GoogleFonts.inter(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF9E7711),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
                     _SeverityBadge(severity: ticket.severity),
                     const SizedBox(width: 6),
                     _StatusBadge(status: ticket.status),
@@ -743,6 +770,89 @@ class _TicketDetailSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
+
+              // Student Uploaded Photographic Evidence
+              if (ticket.imageUrl != null && ticket.imageUrl!.isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryRoyalNavy,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFC59B27).withValues(alpha: 0.6), width: 1.5),
+                    ),
+                    child: Stack(
+                      children: [
+                        Image.network(
+                          ticket.imageUrl!.startsWith('http')
+                              ? ticket.imageUrl!
+                              : '${AppConfig.socketUrl}${ticket.imageUrl!.startsWith('/') ? '' : '/'}${ticket.imageUrl}',
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 110,
+                            color: AppTheme.surfaceLight,
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.photo_library_outlined, color: AppTheme.textMuted, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Photo attached by ${ticket.reporterName}',
+                                  style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.transparent, Colors.black87],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    'Student Photo Evidence: ${ticket.reporterName} (${ticket.reporterRegNo})',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
 
               // Role-Based Actions & Status Card
               Builder(
