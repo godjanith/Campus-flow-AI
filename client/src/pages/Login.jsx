@@ -78,7 +78,7 @@ export default function Login({ onLoginSuccess }) {
         {/* Official University Flagship Header with Uploaded Logo */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0F294A] p-1.5 shadow-md shadow-[#0F294A]/20 border border-[#C59B27]/40 overflow-hidden">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white p-1.5 shadow-md shadow-slate-900/10 border border-[#C59B27]/50 overflow-hidden">
               <img
                 src="/presidency_logo.png"
                 alt="Presidency University Official Logo"

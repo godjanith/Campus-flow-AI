@@ -215,7 +215,7 @@ export default function Dashboard({ user, onLogout }) {
       <header className="sticky top-0 z-[500] border-b-2 border-b-[#C59B27] bg-[#0F294A] text-white shadow-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 p-1 shadow-sm border border-[#C59B27]/40 overflow-hidden">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-[#C59B27]/60 overflow-hidden">
               <img
                 src="/presidency_logo.png"
                 alt="Presidency University"
@@ -252,10 +252,10 @@ export default function Dashboard({ user, onLogout }) {
           </div>
 
           {/* Judge Demo & Real-Time Simulation Controls */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <button
               onClick={handleToggleSimulation}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition shadow-sm ${
+              className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-bold transition shadow-sm sm:gap-1.5 sm:px-3.5 sm:text-xs ${
                 simRunning
                   ? 'bg-rose-600 text-white hover:bg-rose-700'
                   : 'bg-emerald-600 text-white hover:bg-emerald-700'
@@ -263,45 +263,46 @@ export default function Dashboard({ user, onLogout }) {
             >
               {simRunning ? (
                 <>
-                  <StopIcon className="h-4 w-4" /> Stop Auto-Sim
+                  <StopIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Stop</span> Auto-Sim
                 </>
               ) : (
                 <>
-                  <PlayIcon className="h-4 w-4" /> Live Auto-Sim
+                  <PlayIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Live</span> Auto-Sim
                 </>
               )}
             </button>
 
             <button
               onClick={() => setIsSimModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#C59B27]/50 bg-white/10 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/20 transition"
+              className="inline-flex items-center gap-1 rounded-xl border border-[#C59B27]/50 bg-white/10 px-2.5 py-2 text-[11px] font-bold text-white hover:bg-white/20 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
             >
-              <PlusCircleIcon className="h-4 w-4 text-[#C59B27]" /> Inject Incident
+              <PlusCircleIcon className="h-3.5 w-3.5 text-[#C59B27] sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Inject</span> Incident
             </button>
 
             <button
               onClick={handleSeedDemo}
               disabled={seeding}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
             >
-              <SparklesIcon className="h-4 w-4 text-amber-500" />
-              {seeding ? 'Seeding...' : 'Seed 6 Incidents'}
+              <SparklesIcon className="h-3.5 w-3.5 text-amber-500 sm:h-4 sm:w-4" />
+              {seeding ? 'Seeding...' : 'Seed Demo'}
             </button>
 
             <button
               onClick={handlePurgeAll}
               title="Empty all complaints and clear campus grid"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+              className="inline-flex items-center gap-1 rounded-xl border border-rose-300 bg-rose-50 px-2.5 py-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs sm:gap-1.5 sm:px-3.5 sm:text-xs"
             >
-              <TrashIcon className="h-4 w-4 text-rose-600" />
-              Empty Incidents
+              <TrashIcon className="h-3.5 w-3.5 text-rose-600 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Empty</span> Purge
             </button>
 
             <button
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+              title="Export CSV"
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
             >
-              <ArrowDownTrayIcon className="h-4 w-4 text-slate-500" /> CSV
+              <ArrowDownTrayIcon className="h-3.5 w-3.5 text-slate-500 sm:h-4 sm:w-4" /> CSV
             </button>
 
             <button

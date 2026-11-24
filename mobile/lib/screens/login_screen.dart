@@ -181,11 +181,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 42,
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: AppTheme.purePorcelain.withValues(alpha: 0.12),
+                    color: AppTheme.purePorcelain,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: AppTheme.secondaryRoyalGold.withValues(alpha: 0.4),
-                      width: 1,
+                      color: AppTheme.secondaryRoyalGold,
+                      width: 1.5,
                     ),
                   ),
                   child: ClipRRect(
