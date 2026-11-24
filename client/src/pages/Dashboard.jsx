@@ -85,32 +85,65 @@ export default function Dashboard({ user, onLogout }) {
 
     fetchInitial();
 
+    // High-speed dual-sync polling: ensures any incident created on Mobile reflects on Desktop within 2.5s
+    const pollInterval = setInterval(async () => {
+      try {
+        const { data } = await api.get('/tickets');
+        if (Array.isArray(data)) {
+          setTickets((prev) => {
+            const hasChanges =
+              data.length !== prev.length ||
+              data.some((t, i) => prev[i]?._id !== t._id || prev[i]?.status !== t.status);
+            if (hasChanges) {
+              try {
+                localStorage.setItem('campusflow_cached_tickets', JSON.stringify(data));
+              } catch {}
+              return data;
+            }
+            return prev;
+          });
+        }
+      } catch (_) {}
+    }, 2500);
+
     socket.on('connect', () => setSocketConnected(true));
     socket.on('disconnect', () => setSocketConnected(false));
 
     socket.on('ticket:created', (newTicket) => {
       setTickets((prev) => {
-        if (prev.some((t) => t._id === newTicket._id)) return prev;
-        return [newTicket, ...prev];
+        if (prev.some((t) => t._id === newTicket._id || (t.ticketCode && t.ticketCode === newTicket.ticketCode))) return prev;
+        const updated = [newTicket, ...prev];
+        try { localStorage.setItem('campusflow_cached_tickets', JSON.stringify(updated)); } catch {}
+        return updated;
       });
       showToast(`NEW ${newTicket.severity} INCIDENT: ${newTicket.title}`);
     });
 
     socket.on('ticket:updated', (updated) => {
-      setTickets((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+      setTickets((prev) => {
+        const list = prev.map((t) => (t._id === updated._id ? updated : t));
+        try { localStorage.setItem('campusflow_cached_tickets', JSON.stringify(list)); } catch {}
+        return list;
+      });
     });
 
     socket.on('ticket:deleted', (deletedId) => {
-      setTickets((prev) => prev.filter((t) => t._id !== deletedId));
+      setTickets((prev) => {
+        const list = prev.filter((t) => t._id !== deletedId);
+        try { localStorage.setItem('campusflow_cached_tickets', JSON.stringify(list)); } catch {}
+        return list;
+      });
     });
 
     socket.on('tickets:seeded', (allTickets) => {
       setTickets(allTickets);
-      showToast('6 Campus Demo Incidents injected into MongoDB');
+      try { localStorage.setItem('campusflow_cached_tickets', JSON.stringify(allTickets)); } catch {}
+      showToast('Campus Demo Incidents injected into MongoDB');
     });
 
     socket.on('tickets:cleared', () => {
       setTickets([]);
+      try { localStorage.removeItem('campusflow_cached_tickets'); } catch {}
       showToast('All campus hazards and incidents purged from database');
     });
 
@@ -119,6 +152,7 @@ export default function Dashboard({ user, onLogout }) {
     });
 
     return () => {
+      clearInterval(pollInterval);
       socket.off('connect');
       socket.off('disconnect');
       socket.off('ticket:created');
@@ -269,6 +303,26 @@ export default function Dashboard({ user, onLogout }) {
         <div className="fixed bottom-5 right-5 z-[1100] flex items-center gap-2.5 rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-xs font-bold text-slate-900 shadow-xl">
           <span className="h-2.5 w-2.5 animate-ping rounded-full bg-indigo-600"></span>
           <span>{liveToast}</span>
+        </div>
+      )}
+
+      {/* Vercel Cloud Sync Guidance Banner */}
+      {typeof window !== 'undefined' && window.location.hostname.includes('vercel.app') && (
+        <div className="bg-[#C59B27] text-slate-950 px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 border-b border-amber-600 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">⚡</span>
+            <span>
+              You are viewing the Vercel Cloud Preview. To synchronize live with your physical phone (<strong>ZD222KW7QR</strong>), open <strong>http://localhost:5000</strong> on this computer!
+            </span>
+          </div>
+          <a
+            href="http://localhost:5000"
+            target="_blank"
+            rel="noreferrer"
+            className="bg-[#0F294A] text-white px-3 py-1 rounded-lg text-[11px] font-bold hover:bg-slate-800 transition"
+          >
+            Open Local Sync Hub (Port 5000) ↗
+          </a>
         </div>
       )}
 

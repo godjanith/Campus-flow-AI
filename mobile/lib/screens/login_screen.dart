@@ -44,17 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = null;
       _infoBanner = null;
       _isRegister = false;
-      if (mode == 'ADMIN') {
-        _emailController.text = 'admin@presidencyuniversity.in';
-        _passController.text = 'adminpassword123';
-        _nameController.text = 'Campus Facility Commander';
-        _regNoController.text = 'PU-ADMIN-01';
-      } else {
-        _emailController.text = '';
-        _passController.text = '';
-        _nameController.text = '';
-        _regNoController.text = '';
-      }
+      _emailController.text = '';
+      _passController.text = '';
+      _nameController.text = '';
+      _regNoController.text = '';
     });
   }
 
@@ -64,6 +57,16 @@ class _LoginScreenState extends State<LoginScreen> {
       _passController.text = 'student123';
       _nameController.text = 'Rahul R';
       _regNoController.text = '20252MCA0301';
+      _error = null;
+    });
+  }
+
+  void _fillAdminDemo() {
+    setState(() {
+      _emailController.text = 'admin@presidencyuniversity.in';
+      _passController.text = 'adminpassword123';
+      _nameController.text = 'Campus Facility Commander';
+      _regNoController.text = 'PU-ADMIN-01';
       _error = null;
     });
   }
@@ -883,14 +886,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ] else ...[
                               OutlinedButton.icon(
-                                onPressed: () {
-                                  _emailController.text = 'admin@presidencyuniversity.in';
-                                  _passController.text = 'adminpassword123';
-                                  _submit();
-                                },
+                                onPressed: _fillAdminDemo,
                                 icon: const Icon(Icons.admin_panel_settings_rounded, size: 16, color: Color(0xFFC59B27)),
                                 label: Text(
-                                  '1-Tap Facility Admin Launch',
+                                  'Fill Admin Demo Credentials',
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,

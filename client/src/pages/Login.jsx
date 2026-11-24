@@ -37,15 +37,10 @@ export default function Login({ onLoginSuccess }) {
     setError('');
     setSuccessMsg('');
     setIsRegister(false);
-    if (mode === 'ADMIN') {
-      setEmail('admin@presidencyuniversity.in');
-      setPassword('adminpassword123');
-    } else {
-      setEmail('');
-      setPassword('');
-      setName('');
-      setRegNo('');
-    }
+    setEmail('');
+    setPassword('');
+    setName('');
+    setRegNo('');
   };
 
   const handleSubmit = async (e) => {

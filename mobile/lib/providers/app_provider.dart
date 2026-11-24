@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart';
 import '../models/ticket.dart';
 import '../services/api_service.dart';
 import '../services/socket_service.dart';
@@ -15,6 +17,7 @@ class AppProvider extends ChangeNotifier {
   bool _isOnline = true;
   Map<String, dynamic>? _user;
   final SocketService _socketService = SocketService();
+  Timer? _syncTimer;
 
   List<Ticket> get tickets => _tickets;
   bool get isLoading => _isLoading;
@@ -26,14 +29,29 @@ class AppProvider extends ChangeNotifier {
     _initLocalState();
     _monitorConnectivity();
     _setupSocketListeners();
+    _startPeriodicSync();
+  }
+
+  void _startPeriodicSync() {
+    _syncTimer?.cancel();
+    _syncTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      await _syncOfflineQueue();
+      await loadTickets(silent: true);
+    });
   }
 
   Future<void> _initLocalState() async {
     _tickets = await _loadLocalTickets();
     await _recoverPendingQueueTickets();
     notifyListeners();
-    // Then attempt server sync in background
-    loadTickets();
+
+    // Auto detect best route: USB reverse (127.0.0.1:5000) or Wi-Fi (172.17.83.174:5000)
+    await AppConfig.autoDetectActiveHost();
+    _socketService.reconnect();
+
+    // Immediately push any offline queue reports and sync tickets
+    await _syncOfflineQueue();
+    await loadTickets();
   }
 
   Future<void> _saveLocalTickets() async {
@@ -183,9 +201,11 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadTickets() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> loadTickets({bool silent = false}) async {
+    if (!silent && _tickets.isEmpty) {
+      _isLoading = true;
+      notifyListeners();
+    }
     try {
       final serverTickets = await ApiService.getTickets();
       // Merge server tickets with any local offline tickets that haven't reached server yet
@@ -201,15 +221,18 @@ class AppProvider extends ChangeNotifier {
       }
       _tickets = merged;
       await _saveLocalTickets();
+      notifyListeners();
     } catch (e) {
-      debugPrint('Failed to load tickets from server (using local state): $e');
       if (_tickets.isEmpty) {
         _tickets = await _loadLocalTickets();
+        await _recoverPendingQueueTickets();
+        notifyListeners();
       }
-      await _recoverPendingQueueTickets();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (!silent) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -325,6 +348,7 @@ class AppProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _syncTimer?.cancel();
     _socketService.dispose();
     super.dispose();
   }

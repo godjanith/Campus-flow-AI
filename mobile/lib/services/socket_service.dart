@@ -35,6 +35,32 @@ class SocketService {
 
   bool get isConnected => _isConnected;
 
+  void reconnect() {
+    try {
+      _socket.disconnect();
+      _socket.dispose();
+    } catch (_) {}
+
+    _socket = sio.io(
+      AppConfig.socketUrl,
+      sio.OptionBuilder()
+          .setTransports(['websocket', 'polling'])
+          .enableAutoConnect()
+          .enableReconnection()
+          .setReconnectionAttempts(10)
+          .setReconnectionDelay(1000)
+          .build(),
+    );
+
+    _socket.onConnect((_) {
+      _isConnected = true;
+    });
+
+    _socket.onDisconnect((_) {
+      _isConnected = false;
+    });
+  }
+
   void joinStudentRoom(String regNo) {
     _socket.emit('join:student', regNo);
   }
