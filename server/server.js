@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
 import path from 'path';
@@ -9,14 +9,16 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { Server } from 'socket.io';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 import connectDB from './config/db.js';
 import { seedDefaultAdmin } from './utils/seeder.js';
 import authRoutes from './routes/authRoutes.js';
 import ticketRoutes from './routes/ticketRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
@@ -33,21 +35,28 @@ const io = new Server(server, {
 app.set('io', io);
 
 // ── Security & Performance Middleware ───────────────────────────────
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
+}));
 app.use(compression());
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limit for API routes (100 req/min per IP)
+// Rate limit for API routes (300 req/min per IP to prevent dev throttling)
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 100,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests, please try again later.' },
 });
 app.use('/api', apiLimiter);
+
+// Static client build
+const clientDistPath = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDistPath));
 
 // Static uploads with caching headers
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
@@ -86,7 +95,20 @@ io.on('connection', (socket) => {
   });
 });
 
-// ── 404 Catch-All ──────────────────────────────────────────────────
+// ── Single Page App Catch-All for Non-API Routes ───────────────────
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+  const indexPath = path.join(clientDistPath, 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      res.status(200).send('CampusFlow AI Backend API is active. React web build pending.');
+    }
+  });
+});
+
+// ── 404 Catch-All for Unmatched API routes ─────────────────────────
 app.use((req, res) => {
   res.status(404).json({
     success: false,

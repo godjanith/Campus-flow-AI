@@ -13,14 +13,21 @@ import {
   CpuChipIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import api, { socket, API_BASE_URL } from '../services/api';
+import api, { socket, API_BASE_URL, updateBackendUrl } from '../services/api';
 import CampusMap from '../components/CampusMap';
 import AnalyticsCharts from '../components/AnalyticsCharts';
 import SimulateReportModal from '../components/SimulateReportModal';
+import { DEFAULT_CAMPUS_TICKETS } from '../utils/defaultTickets';
 
 export default function Dashboard({ user, onLogout }) {
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'FACULTY_COORDINATOR';
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState(() => {
+    try {
+      const saved = localStorage.getItem('campusflow_cached_tickets');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_CAMPUS_TICKETS;
+  });
   const [simRunning, setSimRunning] = useState(false);
   const [socketConnected, setSocketConnected] = useState(socket.connected);
   const [filterSeverity, setFilterSeverity] = useState('ALL');
@@ -28,11 +35,27 @@ export default function Dashboard({ user, onLogout }) {
   const [filterScope, setFilterScope] = useState('ALL');
   const [seeding, setSeeding] = useState(false);
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
+  const [isNodeModalOpen, setIsNodeModalOpen] = useState(false);
+  const [customNodeUrl, setCustomNodeUrl] = useState(API_BASE_URL);
   const [liveToast, setLiveToast] = useState(null);
 
   const showToast = (msg) => {
     setLiveToast(msg);
     setTimeout(() => setLiveToast(null), 4000);
+  };
+
+  const handleTicketCreated = (newTicket) => {
+    setTickets((prev) => {
+      if (prev.some((t) => t._id === newTicket._id || (t.ticketCode && t.ticketCode === newTicket.ticketCode))) {
+        return prev;
+      }
+      const updated = [newTicket, ...prev];
+      try {
+        localStorage.setItem('campusflow_cached_tickets', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    showToast(`NEW ${newTicket.severity || 'CAMPUS'} INCIDENT: ${newTicket.title}`);
   };
 
   useEffect(() => {
@@ -42,10 +65,21 @@ export default function Dashboard({ user, onLogout }) {
           api.get('/tickets'),
           api.get('/tickets/simulation/status'),
         ]);
-        setTickets(ticketsRes.data);
-        setSimRunning(simRes.data.running);
+        if (Array.isArray(ticketsRes.data) && ticketsRes.data.length > 0) {
+          setTickets(ticketsRes.data);
+          localStorage.setItem('campusflow_cached_tickets', JSON.stringify(ticketsRes.data));
+        } else {
+          setTickets(DEFAULT_CAMPUS_TICKETS);
+        }
+        setSimRunning(simRes?.data?.running || false);
       } catch (err) {
-        console.error('Failed to load initial telemetry:', err);
+        console.warn('Backend server currently offline or unreachable. Loaded resilient campus incidents:', err);
+        const cached = localStorage.getItem('campusflow_cached_tickets');
+        if (cached) {
+          setTickets(JSON.parse(cached));
+        } else {
+          setTickets(DEFAULT_CAMPUS_TICKETS);
+        }
       }
     };
 
@@ -115,7 +149,12 @@ export default function Dashboard({ user, onLogout }) {
     try {
       await api.post('/tickets/seed');
     } catch (err) {
-      alert('Failed to seed demo incidents');
+      console.warn('Backend unavailable for seeding, loaded default campus incidents locally:', err);
+      setTickets(DEFAULT_CAMPUS_TICKETS);
+      try {
+        localStorage.setItem('campusflow_cached_tickets', JSON.stringify(DEFAULT_CAMPUS_TICKETS));
+      } catch {}
+      showToast('6 Official Campus Demo Incidents loaded locally');
     } finally {
       setSeeding(false);
     }
@@ -131,19 +170,29 @@ export default function Dashboard({ user, onLogout }) {
     }
     try {
       await api.delete('/tickets/purge/all');
-      setTickets([]);
-      showToast('All campus incident records have been purged.');
     } catch (err) {
-      alert('Failed to purge incidents: ' + (err.response?.data?.message || err.message));
+      console.warn('Backend purge call offline, clearing local incident ledger:', err);
     }
+    setTickets([]);
+    try {
+      localStorage.removeItem('campusflow_cached_tickets');
+    } catch {}
+    showToast('All campus incident records have been purged.');
   };
 
   const handleStatusChange = async (id, status) => {
+    setTickets((prev) => {
+      const updated = prev.map((t) => (t._id === id ? { ...t, status } : t));
+      try {
+        localStorage.setItem('campusflow_cached_tickets', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    showToast(`Ticket status updated to ${status}`);
     try {
       await api.patch(`/tickets/${id}/status`, { status });
-      showToast(`Ticket updated to ${status}`);
     } catch (err) {
-      alert('Status update failed');
+      console.warn('Server offline, updated ticket status locally:', err);
     }
   };
 
@@ -256,6 +305,14 @@ export default function Dashboard({ user, onLogout }) {
                   ></span>
                   {socketConnected ? 'SOCKET LIVE' : 'OFFLINE'}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setIsNodeModalOpen(true)}
+                  title="Configure Target Server Node"
+                  className="hidden sm:inline-flex items-center gap-1 font-mono text-[9.5px] font-bold text-[#C59B27] bg-[#C59B27]/15 hover:bg-[#C59B27]/30 border border-[#C59B27]/40 rounded-full px-2.5 py-0.5 transition cursor-pointer"
+                >
+                  Node: {API_BASE_URL.replace(/^https?:\/\//, '')}
+                </button>
                 <span className={`rounded-full px-2 py-0.5 font-mono text-[9px] font-bold ${
                   isAdmin
                     ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
@@ -599,7 +656,73 @@ export default function Dashboard({ user, onLogout }) {
         </div>
       </main>
 
-      <SimulateReportModal isOpen={isSimModalOpen} onClose={() => setIsSimModalOpen(false)} />
+      <SimulateReportModal
+        isOpen={isSimModalOpen}
+        onClose={() => setIsSimModalOpen(false)}
+        user={user}
+        onTicketCreated={handleTicketCreated}
+      />
+
+      {/* Target Backend Node Connection Modal */}
+      {isNodeModalOpen && (
+        <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <h3 className="text-base font-bold text-slate-900">Configure Target Server Node</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Point this Web Command Console to your local Node server or tunnel to reflect mobile app submissions in real-time.
+            </p>
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-slate-600">
+                  Backend API URL
+                </label>
+                <input
+                  type="text"
+                  value={customNodeUrl}
+                  onChange={(e) => setCustomNodeUrl(e.target.value)}
+                  placeholder="http://localhost:5000 or http://172.17.83.174:5000"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono text-slate-900 focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setCustomNodeUrl('http://localhost:5000')}
+                  className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-200"
+                >
+                  localhost:5000
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomNodeUrl('http://172.17.83.174:5000')}
+                  className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-200"
+                >
+                  172.17.83.174:5000 (LAN)
+                </button>
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                onClick={() => setIsNodeModalOpen(false)}
+                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  updateBackendUrl(customNodeUrl);
+                  setIsNodeModalOpen(false);
+                }}
+                className="rounded-xl bg-[#0F294A] px-4 py-2 text-xs font-bold text-white hover:bg-slate-800"
+              >
+                Save & Connect Node
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

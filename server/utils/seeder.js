@@ -1,8 +1,13 @@
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Ticket from '../models/Ticket.js';
 
 export const seedDefaultAdmin = async () => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      console.log('[Seeder] Skipping seedDefaultAdmin: MongoDB not connected.');
+      return;
+    }
     const adminEmail = 'admin@presidencyuniversity.in';
     const existingAdmin = await User.findOne({ email: adminEmail });
 

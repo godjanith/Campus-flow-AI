@@ -1,11 +1,34 @@
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
-const rawUrl =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const resolveBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const custom = localStorage.getItem('campusflow_backend_url');
+    if (custom) return custom.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
-export const API_BASE_URL = rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    // If served from Express backend directly (e.g. port 5000 or custom host)
+    if (
+      window.location.port === '5000' ||
+      (window.location.hostname !== 'localhost' && !window.location.hostname.includes('vercel.app'))
+    ) {
+      return window.location.origin;
+    }
+  }
+  const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  return rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+};
+
+export const API_BASE_URL = resolveBaseUrl();
 export const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+
+export const updateBackendUrl = (newUrl) => {
+  if (newUrl && newUrl.trim()) {
+    localStorage.setItem('campusflow_backend_url', newUrl.trim());
+  } else {
+    localStorage.removeItem('campusflow_backend_url');
+  }
+  window.location.reload();
+};
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
