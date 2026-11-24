@@ -22,42 +22,57 @@ export const createTicket = async (req, res, next) => {
     const parsedLat = lat && !isNaN(parseFloat(lat)) ? parseFloat(lat) : 13.1718;
     const parsedLng = lng && !isNaN(parseFloat(lng)) ? parseFloat(lng) : 77.5361;
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : (req.body.imageUrl || null);
     const imagePath = req.file ? req.file.path : null;
     const mimeType = req.file ? req.file.mimetype : null;
 
-    const aiResult = await analyzeIncident({
-      title,
-      description,
-      building: building || 'Engineering Block A',
-      imagePath,
-      mimeType,
-    });
+    let aiResult = {};
+    try {
+      aiResult = await analyzeIncident({
+        title,
+        description,
+        building: building || 'Engineering Block A',
+        imagePath,
+        mimeType,
+      });
+    } catch (aiErr) {
+      console.warn('AI Triage error, using fallback:', aiErr.message);
+    }
+
+    const validSeverities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+    let rawSev = (req.body.severity || aiResult.severity || 'MEDIUM').toUpperCase();
+    const severity = validSeverities.includes(rawSev) ? rawSev : 'MEDIUM';
+
+    const category = req.body.category || aiResult.category || 'Civil & Structural';
+    const triageEngine = aiResult.triageEngineUsed || 'CAMPUSFLOW_RAPID_NLP';
+    const safetyAdvisory = aiResult.safetyAdvisory || (severity === 'CRITICAL' ? 'DANGER: Keep a safe distance and alert campus security.' : 'Report queued for maintenance crew inspection.');
+    const eta = req.body.estimatedResolutionTime || aiResult.estimatedResolutionTime || '2 hours';
+    const aiSummary = aiResult.aiSummary || `[${severity}] ${title} at ${building || 'Engineering Block A'}. Auto-triaged via ${triageEngine}.`;
 
     const ticketCode = `CF-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const ticket = await Ticket.create({
       ticketCode,
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       building: building || 'Engineering Block A',
       location: { lat: parsedLat, lng: parsedLng },
       imageUrl,
-      category: aiResult.category,
-      severity: aiResult.severity,
-      aiSummary: aiResult.aiSummary,
-      estimatedResolutionTime: aiResult.estimatedResolutionTime,
-      safetyAdvisory: aiResult.safetyAdvisory,
-      triageEngineUsed: aiResult.triageEngineUsed,
+      category,
+      severity,
+      aiSummary,
+      estimatedResolutionTime: eta,
+      safetyAdvisory,
+      triageEngineUsed: triageEngine,
       status: 'OPEN',
       reportedBy: {
-        name: reporterName || 'Campus Operations Member',
+        name: reporterName || 'Campus Student',
         regNo: reporterRegNo || 'PU-STUDENT',
       },
       timeline: [
         {
           status: 'OPEN',
-          note: `Reported & triaged as ${aiResult.severity} (${aiResult.category}) via ${aiResult.triageEngineUsed}.`,
+          note: `Reported & triaged as ${severity} (${category}) via ${triageEngine}.`,
           timestamp: new Date(),
         },
       ],

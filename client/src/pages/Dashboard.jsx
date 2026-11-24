@@ -84,8 +84,15 @@ export default function Dashboard({ user, onLogout }) {
           api.get('/tickets/simulation/status'),
         ]);
         if (Array.isArray(ticketsRes.data) && ticketsRes.data.length > 0) {
-          setTickets(ticketsRes.data);
-          localStorage.setItem('campusflow_cached_tickets', JSON.stringify(ticketsRes.data));
+          const cached = localStorage.getItem('campusflow_cached_tickets');
+          const localOnly = cached
+            ? JSON.parse(cached).filter(
+                (p) => p._id && p._id.startsWith('local_tkt_') && !ticketsRes.data.some((d) => d.ticketCode === p.ticketCode)
+              )
+            : [];
+          const combined = [...localOnly, ...ticketsRes.data];
+          setTickets(combined);
+          localStorage.setItem('campusflow_cached_tickets', JSON.stringify(combined));
         } else {
           setTickets(DEFAULT_CAMPUS_TICKETS);
         }
@@ -109,14 +116,18 @@ export default function Dashboard({ user, onLogout }) {
         const { data } = await api.get('/tickets');
         if (Array.isArray(data)) {
           setTickets((prev) => {
+            const localOnly = prev.filter(
+              (p) => p._id && p._id.startsWith('local_tkt_') && !data.some((d) => d.ticketCode === p.ticketCode)
+            );
+            const combined = [...localOnly, ...data];
             const hasChanges =
-              data.length !== prev.length ||
-              data.some((t, i) => prev[i]?._id !== t._id || prev[i]?.status !== t.status);
+              combined.length !== prev.length ||
+              combined.some((t, i) => prev[i]?._id !== t._id || prev[i]?.status !== t.status);
             if (hasChanges) {
               try {
-                localStorage.setItem('campusflow_cached_tickets', JSON.stringify(data));
+                localStorage.setItem('campusflow_cached_tickets', JSON.stringify(combined));
               } catch {}
-              return data;
+              return combined;
             }
             return prev;
           });
@@ -426,9 +437,10 @@ export default function Dashboard({ user, onLogout }) {
 
                 <button
                   onClick={() => setIsSimModalOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-[#C59B27]/50 bg-white/10 px-2.5 py-2 text-[11px] font-bold text-white hover:bg-white/20 transition sm:gap-1.5 sm:px-3.5 sm:text-xs"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#C59B27] px-3 py-2 text-xs font-bold text-slate-900 hover:bg-amber-400 transition shadow-sm"
+                  title="Report or Inject Incident"
                 >
-                  <PlusCircleIcon className="h-3.5 w-3.5 text-[#C59B27] sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Inject</span> Incident
+                  <PlusCircleIcon className="h-4 w-4" /> <span>Report Incident</span>
                 </button>
 
                 <button
@@ -452,7 +464,7 @@ export default function Dashboard({ user, onLogout }) {
             ) : (
               <button
                 onClick={() => setIsSimModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#C59B27] px-3.5 py-2 text-xs font-bold text-slate-900 hover:bg-amber-400 transition shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#C59B27] px-4 py-2 text-xs font-bold text-slate-900 hover:bg-amber-400 transition shadow-sm ring-2 ring-amber-300/40"
               >
                 <PlusCircleIcon className="h-4 w-4" /> Report New Incident
               </button>
@@ -618,17 +630,37 @@ export default function Dashboard({ user, onLogout }) {
                 <option value="IN_PROGRESS">In Progress</option>
                 <option value="RESOLVED">Resolved</option>
               </select>
+
+              <button
+                type="button"
+                onClick={() => setIsSimModalOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#0F294A] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#163B66] border border-[#C59B27]/50 shadow-xs transition"
+              >
+                <PlusCircleIcon className="h-4 w-4 text-[#C59B27]" />
+                <span>+ Report</span>
+              </button>
             </div>
           </div>
 
           {filteredTickets.length === 0 ? (
             <div className="py-12 text-center">
-              <p className="text-sm font-semibold text-slate-600">
-                No incidents match your current filter.
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 mb-3 border border-amber-200">
+                <ExclamationTriangleIcon className="h-6 w-6" />
+              </div>
+              <p className="text-sm font-bold text-slate-800">
+                No incidents match your current filter view.
               </p>
-              <p className="mt-1 text-xs text-slate-400">
-                Click "Seed 6 Incidents" or "Live Auto-Sim" in the top bar to populate real-time data.
+              <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+                Need to report a new campus issue, maintenance hazard, or facility repair?
               </p>
+              <button
+                type="button"
+                onClick={() => setIsSimModalOpen(true)}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0F294A] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#163B66] border border-[#C59B27]/50 shadow-md transition"
+              >
+                <PlusCircleIcon className="h-4 w-4 text-[#C59B27]" />
+                <span>Report New Incident Now</span>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -875,6 +907,18 @@ export default function Dashboard({ user, onLogout }) {
           </div>
         </div>
       )}
+      {/* Floating Action Button for Instant Incident Reporting on Desktop */}
+      <button
+        type="button"
+        onClick={() => setIsSimModalOpen(true)}
+        className="fixed bottom-6 right-6 z-[450] flex items-center gap-2.5 rounded-2xl bg-[#0F294A] border-2 border-[#C59B27] px-4 sm:px-5 py-3 text-xs font-black text-white shadow-2xl hover:bg-[#163B66] hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+        title="Report Campus Incident or Safety Hazard"
+      >
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#C59B27] text-slate-950 font-black text-sm">
+          +
+        </span>
+        <span className="tracking-wide">Report Incident</span>
+      </button>
     </div>
   );
 }

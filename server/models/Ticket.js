@@ -22,15 +22,6 @@ const ticketSchema = new mongoose.Schema(
     imageUrl: { type: String, default: null },
     category: {
       type: String,
-      enum: [
-        'Electrical Safety',
-        'Plumbing & Water',
-        'IT & Network',
-        'Civil & Structural',
-        'HVAC',
-        'Sanitation',
-        'Security Hazard',
-      ],
       default: 'Civil & Structural',
     },
     severity: {
@@ -38,13 +29,12 @@ const ticketSchema = new mongoose.Schema(
       enum: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
       default: 'MEDIUM',
     },
-    aiSummary: { type: String, required: true },
+    aiSummary: { type: String, default: 'Incident logged and queued for facility review.' },
     estimatedResolutionTime: { type: String, default: '2 hours' },
-    safetyAdvisory: { type: String, required: true },
+    safetyAdvisory: { type: String, default: 'Keep clear of the hazard area until staff arrive.' },
     triageEngineUsed: {
       type: String,
-      enum: ['GEMINI_MULTIMODAL', 'OFFLINE_NLP_HEURISTIC'],
-      default: 'OFFLINE_NLP_HEURISTIC',
+      default: 'CAMPUSFLOW_RAPID_NLP',
     },
     status: {
       type: String,
