@@ -124,15 +124,28 @@ class _LoginScreenState extends State<LoginScreen> {
           msg.contains('Connection refused') ||
           msg.contains('Network connection error') ||
           msg.contains('SocketException') ||
-          msg.contains('ClientException')) {
+          msg.contains('ClientException') ||
+          msg.contains('TimeoutException') ||
+          msg.contains('timed out') ||
+          msg.contains('Future not completed') ||
+          msg.contains('Connection timed out')) {
         setState(() {
-          _infoBanner = 'Backend offline. Launching resilient local session...';
+          _infoBanner = 'Backend offline or unreachable. Initializing resilient local session...';
         });
         await Future.delayed(const Duration(milliseconds: 600));
+
+        final role = _isRegister
+            ? _selectedRole
+            : (email.contains('admin') ? 'ADMIN' : 'STUDENT');
+        final defaultReg = role == 'FACULTY_COORDINATOR'
+            ? 'PU-FAC-EMP'
+            : (role == 'ADMIN' ? 'PU-ADMIN-01' : 'PU-STUDENT');
+
         final fallbackUser = await ApiService.demoLogin(
-          name: name.isNotEmpty ? name : 'Campus Operations Member',
+          name: name.isNotEmpty ? name : (role == 'ADMIN' ? 'Campus Admin Commander' : 'Campus Member'),
           email: email,
-          regNo: regNo.isNotEmpty ? regNo : 'PU-STUDENT',
+          regNo: regNo.isNotEmpty ? regNo : defaultReg,
+          role: role,
         );
         await _proceedToApp(fallbackUser);
       } else {

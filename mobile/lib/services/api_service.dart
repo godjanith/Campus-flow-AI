@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -6,7 +7,7 @@ import '../config/app_config.dart';
 import '../models/ticket.dart';
 
 class ApiService {
-  static const Duration _timeout = Duration(seconds: 8);
+  static const Duration _timeout = Duration(seconds: 4);
 
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -46,9 +47,11 @@ class ApiService {
         }
       }
     } on SocketException {
-      throw Exception('Server unreachable at ${AppConfig.baseUrl}. Ensure backend is running on port 5000, or tap "Explore as Demo Student".');
+      throw Exception('Server unreachable at ${AppConfig.baseUrl}. Ensure backend is running on port 5000.');
     } on http.ClientException {
-      throw Exception('Connection failed to backend. Tap "Explore as Demo Student" to test immediately.');
+      throw Exception('Connection failed to backend.');
+    } on TimeoutException {
+      throw Exception('Connection timed out to server at ${AppConfig.baseUrl}.');
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Network error: $e');
@@ -94,9 +97,11 @@ class ApiService {
         }
       }
     } on SocketException {
-      throw Exception('Server unreachable at ${AppConfig.baseUrl}. Ensure backend is running on port 5000, or tap "Explore as Demo Student".');
+      throw Exception('Server unreachable at ${AppConfig.baseUrl}. Ensure backend is running on port 5000.');
     } on http.ClientException {
-      throw Exception('Connection failed to backend. Tap "Explore as Demo Student" to test immediately.');
+      throw Exception('Connection failed to backend.');
+    } on TimeoutException {
+      throw Exception('Connection timed out to server at ${AppConfig.baseUrl}.');
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Registration error: $e');
@@ -107,12 +112,13 @@ class ApiService {
     String name = 'Campus Operations Member',
     String email = 'student@presidencyuniversity.in',
     String regNo = 'PU-STUDENT',
+    String role = 'STUDENT',
   }) async {
     final data = {
-      '_id': 'demo_user_student',
+      '_id': 'user_${DateTime.now().millisecondsSinceEpoch}',
       'name': name,
       'email': email,
-      'role': 'STUDENT',
+      'role': role,
       'regNo': regNo,
       'token': 'demo_jwt_token_campusflow_2026',
     };
